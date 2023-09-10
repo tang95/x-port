@@ -1,0 +1,9 @@
+services:
+  mongodb:
+    image: 'mongo:latest'
+    environment:
+      - 'MONGO_INITDB_DATABASE=xport'
+      - 'MONGO_INITDB_ROOT_PASSWORD=xport'
+      - 'MONGO_INITDB_ROOT_USERNAME=xport'
+    ports:
+      - '27017:27017'
