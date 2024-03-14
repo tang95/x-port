@@ -1,6 +1,8 @@
 import {defineConfig} from '@umijs/max';
 
 export default defineConfig({
+    esbuildMinifyIIFE: true,
+    hash: true,
     antd: {},
     access: {},
     model: {},

@@ -1,0 +1,14 @@
+http:
+  addr: 0.0.0.0:8080
+  timeout: 10s
+  debug: false
+secret_key: your_secret_key
+log_level: INFO
+database:
+  driver: sqlite
+  source: x-port.sqlite
+domain: http://localhost:8080
+oauth:
+  github:
+    client_id: your_client_id
+    client_secret: your_client_secret
