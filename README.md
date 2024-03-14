@@ -6,13 +6,13 @@
 
 ## 简介
 
-X-Port 是一个开箱即用的开源内部开发者门户，改善开发者的体验，提升工作效率。
+X-Port 是一个开箱即用的内部开发者门户，改善开发者的体验，提升工作效率。
 
 此项目受 [Backstage](https://backstage.io) 和 [Compass](https://www.atlassian.com/software/compass) 的启发。
 
 Backstage 很好，但是它是一个开发平台，需要进行大量的定制（Material Design 有点不习惯），而 X-Port 开箱即用。
 
-Compass 开箱即用精心设计（好看），但其是一个SaaS服务，需要 Atlassian 提供的认证服务，目前免费。
+Compass 开箱即用且精心设计（好看），但它是一个SaaS服务，目前免费。
 
 ## 快速开始
 
