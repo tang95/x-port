@@ -1,0 +1,62 @@
+scalar Time
+scalar Map
+
+type Query {
+    listComponent(page: PageInput!, filter: ComponentFilter): ComponentConnection!
+    getComponent(id: ID!): Component!
+}
+
+input OrderInput {
+    fields: [String]!
+    direction: SortDirection!
+}
+
+enum SortDirection {
+    ASC
+    DESC
+}
+
+input PageInput {
+    page: Int!
+    size: Int!
+    orders: OrderInput
+}
+
+type Link {
+    title: String!
+    url: String!
+    type: String!
+}
+
+type Component {
+    id: ID!
+    name: String!
+    description: String
+    type: String!
+    lifecycle: String!
+    owner: User!
+
+    links: [Link]
+    tags: [String]
+    annotations: Map
+    components(page: PageInput!, filter: ComponentFilter): [Component]
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input ComponentFilter {
+    keywords: String
+    type: String
+    lifecycle: String
+    teamID: String
+}
+
+type ComponentConnection {
+    total: Int!
+    data: [Component]
+}
+
+type User {
+    id: ID!
+    name: String!
+}
