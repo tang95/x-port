@@ -3,7 +3,7 @@ package data
 import (
 	"errors"
 	"github.com/tang95/x-port/config"
-	"github.com/tang95/x-port/internal/model"
+	"github.com/tang95/x-port/internal/domain"
 	"github.com/tang95/x-port/internal/service"
 	"go.uber.org/zap"
 
@@ -27,7 +27,7 @@ func NewData(config *config.Server, logger *zap.Logger) (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = database.AutoMigrate(&model.Component{}, &model.Team{}, &model.User{})
+	err = database.AutoMigrate(&domain.Component{}, &domain.Team{}, &domain.User{})
 	if err != nil {
 		logger.Error("failed to auto migrate database", zap.Error(err))
 		return nil, err

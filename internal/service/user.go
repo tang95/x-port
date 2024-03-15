@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"github.com/patrickmn/go-cache"
-	"github.com/tang95/x-port/internal/model"
+	"github.com/tang95/x-port/internal/domain"
 )
 
 const (
@@ -11,16 +11,16 @@ const (
 )
 
 type UserRepo interface {
-	List(ctx context.Context, filter *model.ListUserFilter, page *model.PageQuery) (int32, []*model.User, error)
-	Create(ctx context.Context, user *model.User) (*model.User, error)
-	Get(ctx context.Context, id string) (*model.User, error)
+	List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery) (int32, []*domain.User, error)
+	Create(ctx context.Context, user *domain.User) (*domain.User, error)
+	Get(ctx context.Context, id string) (*domain.User, error)
 	Delete(ctx context.Context, id string) error
-	Update(ctx context.Context, id string, user *model.User) error
-	GetByGithubID(ctx context.Context, githubID string) (*model.User, error)
+	Update(ctx context.Context, id string, user *domain.User) error
+	GetByGithubID(ctx context.Context, githubID string) (*domain.User, error)
 	Count(ctx context.Context) (int32, error)
 }
 
-func (service *Service) GetUserByGithubID(ctx context.Context, githubID string) (*model.User, error) {
+func (service *Service) GetUserByGithubID(ctx context.Context, githubID string) (*domain.User, error) {
 	user, err := service.userRepo.GetByGithubID(ctx, githubID)
 	if err != nil {
 		return nil, err
@@ -28,14 +28,14 @@ func (service *Service) GetUserByGithubID(ctx context.Context, githubID string) 
 	return user, nil
 }
 
-func (service *Service) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
+func (service *Service) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	// 如果是第一个用户，则默认为管理员
 	count, ok := service.cache.Get(CountUserCacheKey)
 	if !ok {
 		count, _ = service.userRepo.Count(ctx)
 	}
 	if count.(int32) == 0 {
-		user.Role = model.Admin
+		user.Role = domain.Admin
 	}
 	newUser, err := service.userRepo.Create(ctx, user)
 	if err != nil {

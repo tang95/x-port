@@ -7,7 +7,7 @@ type Query {
 }
 
 input OrderInput {
-    fields: [String]!
+    fields: [String!]
     direction: SortDirection!
 }
 
@@ -19,7 +19,7 @@ enum SortDirection {
 input PageInput {
     page: Int!
     size: Int!
-    orders: OrderInput
+    order: OrderInput
 }
 
 type Link {
@@ -36,10 +36,10 @@ type Component {
     lifecycle: String!
     owner: User!
 
-    links: [Link]
-    tags: [String]
+    links: [Link!]
+    tags: [String!]
     annotations: Map
-    components(page: PageInput!, filter: ComponentFilter): [Component]
+    components(page: PageInput!, filter: ComponentFilter): ComponentConnection!
     createdAt: Time!
     updatedAt: Time!
 }
@@ -53,10 +53,12 @@ input ComponentFilter {
 
 type ComponentConnection {
     total: Int!
-    data: [Component]
+    data: [Component!]
 }
 
 type User {
     id: ID!
     name: String!
+    description: String
+    avatar: String
 }

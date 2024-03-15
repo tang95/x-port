@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/tang95/x-port/config"
-	"github.com/tang95/x-port/internal/model"
+	"github.com/tang95/x-port/internal/domain"
 	"github.com/tang95/x-port/internal/service"
 	"go.uber.org/zap"
 )
@@ -17,13 +17,13 @@ type Auth struct {
 }
 
 type User struct {
-	ID          string     `json:"id"`
-	Name        string     `json:"name"`
-	Avatar      string     `json:"avatar"`
-	Description string     `json:"description"`
-	Role        model.Role `json:"role"`
-	Token       string     `json:"token"`
-	ExpireAt    int64      `json:"expire_at"`
+	ID          string      `json:"id"`
+	Name        string      `json:"name"`
+	Avatar      string      `json:"avatar"`
+	Description string      `json:"description"`
+	Role        domain.Role `json:"role"`
+	Token       string      `json:"token"`
+	ExpireAt    int64       `json:"expire_at"`
 }
 
 type OAuth interface {

@@ -17,20 +17,35 @@ import (
 var consoleFS embed.FS
 
 type Controller struct {
-	service     *service.Service
-	config      *config.Server
-	logger      *zap.Logger
-	transaction service.Transaction
-	auth        *auth.Auth
+	service       *service.Service
+	config        *config.Server
+	logger        *zap.Logger
+	transaction   service.Transaction
+	auth          *auth.Auth
+	componentRepo service.ComponentRepo
+	userRepo      service.UserRepo
+	teamRepo      service.TeamRepo
 }
 
-func NewController(service *service.Service, config *config.Server, logger *zap.Logger, transaction service.Transaction, a *auth.Auth) (*Controller, error) {
+func NewController(
+	service *service.Service,
+	config *config.Server,
+	logger *zap.Logger,
+	transaction service.Transaction,
+	a *auth.Auth,
+	componentRepo service.ComponentRepo,
+	userRepo service.UserRepo,
+	teamRepo service.TeamRepo,
+) (*Controller, error) {
 	return &Controller{
-		service:     service,
-		config:      config,
-		logger:      logger,
-		transaction: transaction,
-		auth:        a,
+		service:       service,
+		config:        config,
+		logger:        logger,
+		transaction:   transaction,
+		auth:          a,
+		componentRepo: componentRepo,
+		userRepo:      userRepo,
+		teamRepo:      teamRepo,
 	}, nil
 }
 

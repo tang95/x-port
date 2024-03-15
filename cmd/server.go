@@ -164,7 +164,13 @@ func newServer() ([]Server, error) {
 		return nil, err
 	}
 	a := auth.NewAuth(cfg, logger, svc)
-	controllers, err := controller.NewController(svc, cfg, logger, d.Transaction, a)
+	controllers, err := controller.NewController(
+		svc, cfg, logger,
+		d.Transaction, a,
+		d.ComponentRepo,
+		d.UserRepo,
+		d.TeamRepo,
+	)
 	if err != nil {
 		return nil, err
 	}

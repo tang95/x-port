@@ -1,4 +1,4 @@
-package model
+package domain
 
 type Lifecycle string
 
@@ -45,6 +45,7 @@ type Component struct {
 	Type         ComponentType          `gorm:"type:varchar(20); not null; comment:类型"`
 	OwnerID      string                 `gorm:"type:varchar(36); not null; comment:拥有者ID"`
 	Tags         []string               `gorm:"column:tags; type:json; serializer:json; comment:标签"`
+	Links        []Link                 `gorm:"column:links; type:json; serializer:json; comment:链接"`
 	Annotations  map[string]interface{} `gorm:"column:annotations; type:json; serializer:json; comment:注释"`
 	ComponentIDs []string               `gorm:"column:component_ids; type:json; serializer:json; comment:依赖组件IDs"`
 }
@@ -54,4 +55,9 @@ func (Component) TableName() string {
 }
 
 type ListComponentFilter struct {
+	ComponentIDs []string      `json:"componentIDs,omitempty"`
+	Keywords     string        `json:"keywords,omitempty"`
+	Type         ComponentType `json:"type,omitempty"`
+	Lifecycle    Lifecycle     `json:"lifecycle,omitempty"`
+	TeamID       string        `json:"teamID,omitempty"`
 }

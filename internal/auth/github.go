@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/tang95/x-port/internal/model"
+	"github.com/tang95/x-port/internal/domain"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 	"gorm.io/gorm"
@@ -56,12 +56,12 @@ func (g *github) LoginByCode(ctx context.Context, code string, autoRegister bool
 	}
 	if user == nil {
 		if autoRegister {
-			user, err = g.service.CreateUser(ctx, &model.User{
+			user, err = g.service.CreateUser(ctx, &domain.User{
 				Name:        gUser.Name,
 				Description: gUser.Bio,
 				Avatar:      gUser.AvatarURL,
 				GithubID:    gUser.Login,
-				Role:        model.Member,
+				Role:        domain.Member,
 			})
 			if err != nil {
 				return nil, err

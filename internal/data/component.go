@@ -2,8 +2,9 @@ package data
 
 import (
 	"context"
-	"github.com/tang95/x-port/internal/model"
+	"github.com/tang95/x-port/internal/domain"
 	"github.com/tang95/x-port/internal/service"
+	"strings"
 )
 
 type componentRepo struct {
@@ -14,12 +15,13 @@ func newComponentRepo(data *Data) service.ComponentRepo {
 	return &componentRepo{data}
 }
 
-func (repo *componentRepo) Get(ctx context.Context, id string) (*model.Component, error) {
-	//TODO implement me
-	panic("implement me")
+func (repo *componentRepo) Get(ctx context.Context, id string) (*domain.Component, error) {
+	component := domain.Component{}
+	tx := repo.DB(ctx).Where("id = ?", id).First(&component)
+	return &component, tx.Error
 }
 
-func (repo *componentRepo) Create(ctx context.Context, component *model.Component) (string, error) {
+func (repo *componentRepo) Create(ctx context.Context, component *domain.Component) (string, error) {
 	tx := repo.DB(ctx).Create(component)
 	return component.ID, tx.Error
 }
@@ -29,7 +31,34 @@ func (repo *componentRepo) Delete(ctx context.Context, id string) error {
 	panic("implement me")
 }
 
-func (repo *componentRepo) List(ctx context.Context, filter *model.ListComponentFilter, page *model.PageQuery) (int32, []*model.Component, error) {
-	//TODO implement me
-	panic("implement me")
+func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error) {
+	var (
+		components []*domain.Component
+		total      int64
+	)
+	tx := repo.DB(ctx).Model(&domain.Component{})
+	if filter.Keywords != "" {
+		tx = tx.Where("name like ?", "%"+filter.Keywords+"%")
+	}
+	if filter.Type != "" {
+		tx = tx.Where("type = ?", filter.Type)
+	}
+	if filter.Lifecycle != "" {
+		tx = tx.Where("lifecycle = ?", filter.Lifecycle)
+	}
+	if len(filter.ComponentIDs) > 0 {
+		tx = tx.Where("id in ?", filter.ComponentIDs)
+	}
+	tx = tx.Count(&total)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if page != nil {
+		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit())
+		if page.Order != nil && page.Order.Direction != "" && page.Order.Field != nil {
+			tx = tx.Order(strings.Join(page.Order.Field, ",") + " " + string(page.Order.Direction))
+		}
+	}
+	tx = tx.Find(&components)
+	return components, int32(total), tx.Error
 }

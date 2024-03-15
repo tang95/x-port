@@ -80,15 +80,17 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
+		Avatar      func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
 	}
 }
 
 type ComponentResolver interface {
 	Owner(ctx context.Context, obj *model.Component) (*model.User, error)
 
-	Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) ([]*model.Component, error)
+	Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 }
 type QueryResolver interface {
 	ListComponent(ctx context.Context, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
@@ -261,6 +263,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListComponent(childComplexity, args["page"].(model.PageInput), args["filter"].(*model.ComponentFilter)), true
+
+	case "User.avatar":
+		if e.complexity.User.Avatar == nil {
+			break
+		}
+
+		return e.complexity.User.Avatar(childComplexity), true
+
+	case "User.description":
+		if e.complexity.User.Description == nil {
+			break
+		}
+
+		return e.complexity.User.Description(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -764,6 +780,10 @@ func (ec *executionContext) fieldContext_Component_owner(ctx context.Context, fi
 				return ec.fieldContext_User_id(ctx, field)
 			case "name":
 				return ec.fieldContext_User_name(ctx, field)
+			case "description":
+				return ec.fieldContext_User_description(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -796,7 +816,7 @@ func (ec *executionContext) _Component_links(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*model.Link)
 	fc.Result = res
-	return ec.marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLinkᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Component_links(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -843,9 +863,9 @@ func (ec *executionContext) _Component_tags(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Component_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -923,11 +943,14 @@ func (ec *executionContext) _Component_components(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Component)
+	res := resTmp.(*model.ComponentConnection)
 	fc.Result = res
-	return ec.marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx, field.Selections, res)
+	return ec.marshalNComponentConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Component_components(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -938,32 +961,12 @@ func (ec *executionContext) fieldContext_Component_components(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Component_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Component_name(ctx, field)
-			case "description":
-				return ec.fieldContext_Component_description(ctx, field)
-			case "type":
-				return ec.fieldContext_Component_type(ctx, field)
-			case "lifecycle":
-				return ec.fieldContext_Component_lifecycle(ctx, field)
-			case "owner":
-				return ec.fieldContext_Component_owner(ctx, field)
-			case "links":
-				return ec.fieldContext_Component_links(ctx, field)
-			case "tags":
-				return ec.fieldContext_Component_tags(ctx, field)
-			case "annotations":
-				return ec.fieldContext_Component_annotations(ctx, field)
-			case "components":
-				return ec.fieldContext_Component_components(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Component_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Component_updatedAt(ctx, field)
+			case "total":
+				return ec.fieldContext_ComponentConnection_total(ctx, field)
+			case "data":
+				return ec.fieldContext_ComponentConnection_data(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Component", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ComponentConnection", field.Name)
 		},
 	}
 	defer func() {
@@ -1137,7 +1140,7 @@ func (ec *executionContext) _ComponentConnection_data(ctx context.Context, field
 	}
 	res := resTmp.([]*model.Component)
 	fc.Result = res
-	return ec.marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx, field.Selections, res)
+	return ec.marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ComponentConnection_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1658,6 +1661,88 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 }
 
 func (ec *executionContext) fieldContext_User_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_description(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_avatar(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_avatar(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Avatar, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_avatar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -3507,7 +3592,7 @@ func (ec *executionContext) unmarshalInputOrderInput(ctx context.Context, obj in
 		switch k {
 		case "fields":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fields"))
-			data, err := ec.unmarshalNString2ᚕᚖstring(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3532,7 +3617,7 @@ func (ec *executionContext) unmarshalInputPageInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"page", "size", "orders"}
+	fieldsInOrder := [...]string{"page", "size", "order"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3553,13 +3638,13 @@ func (ec *executionContext) unmarshalInputPageInput(ctx context.Context, obj int
 				return it, err
 			}
 			it.Size = data
-		case "orders":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orders"))
+		case "order":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("order"))
 			data, err := ec.unmarshalOOrderInput2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐOrderInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Orders = data
+			it.Order = data
 		}
 	}
 
@@ -3659,6 +3744,9 @@ func (ec *executionContext) _Component(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Component_components(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -3920,6 +4008,10 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "description":
+			out.Values[i] = ec._User_description(ctx, field, obj)
+		case "avatar":
+			out.Values[i] = ec._User_avatar(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4342,6 +4434,16 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) marshalNLink2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx context.Context, sel ast.SelectionSet, v *model.Link) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Link(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNPageInput2githubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐPageInput(ctx context.Context, v interface{}) (model.PageInput, error) {
 	res, err := ec.unmarshalInputPageInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4370,32 +4472,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -4706,7 +4782,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx context.Context, sel ast.SelectionSet, v []*model.Component) graphql.Marshaler {
+func (ec *executionContext) marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Component) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4733,7 +4809,7 @@ func (ec *executionContext) marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOComponent2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx, sel, v[i])
+			ret[i] = ec.marshalNComponent2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4744,14 +4820,13 @@ func (ec *executionContext) marshalOComponent2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑ
 	}
 	wg.Wait()
 
-	return ret
-}
-
-func (ec *executionContext) marshalOComponent2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponent(ctx context.Context, sel ast.SelectionSet, v *model.Component) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
 	}
-	return ec._Component(ctx, sel, v)
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOComponentFilter2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentFilter(ctx context.Context, v interface{}) (*model.ComponentFilter, error) {
@@ -4762,7 +4837,7 @@ func (ec *executionContext) unmarshalOComponentFilter2ᚖgithubᚗcomᚋtang95�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx context.Context, sel ast.SelectionSet, v []*model.Link) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLinkᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Link) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4789,7 +4864,7 @@ func (ec *executionContext) marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑport�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOLink2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx, sel, v[i])
+			ret[i] = ec.marshalNLink2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4800,14 +4875,13 @@ func (ec *executionContext) marshalOLink2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑport�
 	}
 	wg.Wait()
 
-	return ret
-}
-
-func (ec *executionContext) marshalOLink2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐLink(ctx context.Context, sel ast.SelectionSet, v *model.Link) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
 	}
-	return ec._Link(ctx, sel, v)
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
@@ -4834,7 +4908,7 @@ func (ec *executionContext) unmarshalOOrderInput2ᚖgithubᚗcomᚋtang95ᚋxᚑ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4843,10 +4917,10 @@ func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*string, len(vSlice))
+	res := make([]string, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4854,13 +4928,19 @@ func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v
 	return res, nil
 }
 
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
 	}
 
 	return ret

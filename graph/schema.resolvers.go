@@ -6,29 +6,142 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/tang95/x-port/graph/model"
+	"github.com/tang95/x-port/internal/domain"
 )
 
 // Owner is the resolver for the owner field.
 func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Owner - owner"))
+	if obj.Owner != nil && obj.Owner.ID != "" {
+		user, err := r.userRepo.Get(ctx, obj.Owner.ID)
+		if err != nil {
+			return nil, err
+		}
+		return &model.User{
+			ID:          user.ID,
+			Name:        user.Name,
+			Description: &user.Description,
+			Avatar:      &user.Avatar,
+		}, nil
+	}
+	return nil, nil
 }
 
 // Components is the resolver for the components field.
-func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) ([]*model.Component, error) {
-	panic(fmt.Errorf("not implemented: Components - components"))
+func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
+	if obj.Components.Total > 0 {
+		subComponentIDs := make([]string, obj.Components.Total)
+		for i, component := range obj.Components.Data {
+			subComponentIDs[i] = component.ID
+		}
+		var orderQuery domain.OrderQuery
+		listFilter := domain.ListComponentFilter{
+			ComponentIDs: subComponentIDs,
+		}
+		if page.Order != nil {
+			orderQuery = domain.OrderQuery{
+				Field:     page.Order.Fields,
+				Direction: domain.Direction(page.Order.Direction),
+			}
+		}
+		if filter != nil {
+			if filter.TeamID != nil {
+				listFilter.TeamID = *filter.TeamID
+			}
+			if filter.Type != nil {
+				listFilter.Type = domain.ComponentType(*filter.Type)
+			}
+			if filter.Lifecycle != nil {
+				listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
+			}
+			if filter.Keywords != nil {
+				listFilter.Keywords = *filter.Keywords
+			}
+		}
+		components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
+			Page:  int32(page.Page),
+			Size:  int32(page.Size),
+			Order: &orderQuery,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if total == 0 {
+			return &model.ComponentConnection{}, nil
+		}
+		data := make([]*model.Component, len(components))
+		for i, component := range components {
+			data[i] = componentModelToDomain(component)
+		}
+		return &model.ComponentConnection{
+			Total: int(total),
+			Data:  data,
+		}, nil
+	}
+	return nil, nil
 }
 
 // ListComponent is the resolver for the listComponent field.
 func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
-	panic(fmt.Errorf("not implemented: ListComponent - listComponent"))
+	var (
+		listFilter domain.ListComponentFilter
+		orderQuery domain.OrderQuery
+	)
+	if page.Order != nil {
+		orderQuery = domain.OrderQuery{
+			Field:     page.Order.Fields,
+			Direction: domain.Direction(page.Order.Direction),
+		}
+	}
+	if filter != nil {
+		listFilter = domain.ListComponentFilter{}
+		if filter.TeamID != nil {
+			listFilter.TeamID = *filter.TeamID
+		}
+		if filter.Type != nil {
+			listFilter.Type = domain.ComponentType(*filter.Type)
+		}
+		if filter.Lifecycle != nil {
+			listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
+		}
+		if filter.Keywords != nil {
+			listFilter.Keywords = *filter.Keywords
+		}
+	}
+	components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
+		Page:  int32(page.Page),
+		Size:  int32(page.Size),
+		Order: &orderQuery,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if total == 0 {
+		return &model.ComponentConnection{
+			Total: 0,
+			Data:  nil,
+		}, nil
+	}
+	data := make([]*model.Component, 0)
+	for _, component := range components {
+		data = append(data, componentModelToDomain(component))
+	}
+	result := &model.ComponentConnection{
+		Total: int(total),
+		Data:  data,
+	}
+	return result, nil
 }
 
 // GetComponent is the resolver for the getComponent field.
 func (r *queryResolver) GetComponent(ctx context.Context, id string) (*model.Component, error) {
-	panic(fmt.Errorf("not implemented: GetComponent - getComponent"))
+	component, err := r.componentRepo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	result := componentModelToDomain(component)
+	return result, nil
 }
 
 // Component returns ComponentResolver implementation.
@@ -39,3 +152,53 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type componentResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func componentModelToDomain(component *domain.Component) *model.Component {
+	result := &model.Component{
+		ID:          component.ID,
+		Name:        component.Name,
+		Description: &component.Description,
+		Type:        string(component.Type),
+		Lifecycle:   string(component.Lifecycle),
+		Owner: &model.User{
+			ID:   component.OwnerID,
+			Name: "",
+		},
+		Tags:        component.Tags,
+		Annotations: component.Annotations,
+		CreatedAt:   component.CreatedAt,
+		UpdatedAt:   component.UpdatedAt,
+	}
+	if len(component.Links) > 0 {
+		links := make([]*model.Link, 0)
+		for _, link := range component.Links {
+			links = append(links, &model.Link{
+				URL:   link.URL,
+				Type:  string(link.Type),
+				Title: link.Title,
+			})
+		}
+		result.Links = links
+	}
+	if len(component.ComponentIDs) > 0 {
+		subComponentConnection := &model.ComponentConnection{
+			Total: len(component.ComponentIDs),
+			Data:  nil,
+		}
+		components := make([]*model.Component, len(component.ComponentIDs))
+		for i, componentID := range component.ComponentIDs {
+			components[i] = &model.Component{
+				ID: componentID,
+			}
+		}
+		subComponentConnection.Data = components
+		result.Components = subComponentConnection
+	}
+	return result
+}

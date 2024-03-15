@@ -17,9 +17,9 @@ type Component struct {
 	Lifecycle   string                 `json:"lifecycle"`
 	Owner       *User                  `json:"owner"`
 	Links       []*Link                `json:"links,omitempty"`
-	Tags        []*string              `json:"tags,omitempty"`
+	Tags        []string               `json:"tags,omitempty"`
 	Annotations map[string]interface{} `json:"annotations,omitempty"`
-	Components  []*Component           `json:"components,omitempty"`
+	Components  *ComponentConnection   `json:"components"`
 	CreatedAt   time.Time              `json:"createdAt"`
 	UpdatedAt   time.Time              `json:"updatedAt"`
 }
@@ -43,22 +43,24 @@ type Link struct {
 }
 
 type OrderInput struct {
-	Fields    []*string     `json:"fields"`
+	Fields    []string      `json:"fields,omitempty"`
 	Direction SortDirection `json:"direction"`
 }
 
 type PageInput struct {
-	Page   int         `json:"page"`
-	Size   int         `json:"size"`
-	Orders *OrderInput `json:"orders,omitempty"`
+	Page  int         `json:"page"`
+	Size  int         `json:"size"`
+	Order *OrderInput `json:"order,omitempty"`
 }
 
 type Query struct {
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Avatar      *string `json:"avatar,omitempty"`
 }
 
 type SortDirection string

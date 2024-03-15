@@ -8,7 +8,14 @@ import (
 )
 
 func (controller *Controller) graphqlHandler() gin.HandlerFunc {
-	resolver := graph.NewResolver(controller.service, controller.logger, controller.config)
+	resolver := graph.NewResolver(
+		controller.service,
+		controller.logger,
+		controller.config,
+		controller.componentRepo,
+		controller.userRepo,
+		controller.teamRepo,
+	)
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 	return func(ctx *gin.Context) {
 		h.ServeHTTP(ctx.Writer, ctx.Request)
@@ -16,7 +23,7 @@ func (controller *Controller) graphqlHandler() gin.HandlerFunc {
 }
 
 func (controller *Controller) playgroundHandler() gin.HandlerFunc {
-	h := playground.Handler("GraphQL", "/graphql/query")
+	h := playground.Handler("GraphQL", "/api/graphql/query")
 	return func(ctx *gin.Context) {
 		h.ServeHTTP(ctx.Writer, ctx.Request)
 	}

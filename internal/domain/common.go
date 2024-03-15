@@ -1,4 +1,4 @@
-package model
+package domain
 
 import (
 	"github.com/google/uuid"
@@ -17,6 +17,14 @@ type PageQuery struct {
 	Page  int32 `json:"page"`
 	Size  int32 `json:"size"`
 	Order *OrderQuery
+}
+
+func (pagination *PageQuery) GetOffset() int {
+	return int((pagination.Page - 1) * pagination.Size)
+}
+
+func (pagination *PageQuery) GetLimit() int {
+	return int(pagination.Size)
 }
 
 type OrderQuery struct {
