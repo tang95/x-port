@@ -26,11 +26,6 @@ func (repo *componentRepo) Create(ctx context.Context, component *domain.Compone
 	return component.ID, tx.Error
 }
 
-func (repo *componentRepo) Delete(ctx context.Context, id string) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error) {
 	var (
 		components []*domain.Component
@@ -61,4 +56,8 @@ func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponen
 	}
 	tx = tx.Find(&components)
 	return components, int32(total), tx.Error
+}
+
+func (repo *componentRepo) Update(ctx context.Context, id string, component *domain.Component) error {
+	return repo.DB(ctx).Model(&domain.Component{}).Where("id = ?", id).Updates(component).Error
 }

@@ -31,27 +31,15 @@ export default defineConfig({
         },
         {
             name: '软件目录',
-            path: '/access',
-            component: './Access',
+            path: '/component',
+            component: './Component',
             icon: 'appstore'
         },
         {
             name: '团队',
             path: '/team',
-            component: './Access',
+            component: './Team',
             icon: 'team'
-        },
-        {
-            name: '记分卡',
-            path: '/score-card',
-            component: './Access',
-            icon: 'fundView'
-        },
-        {
-            name: '自助服务',
-            path: '/table',
-            component: './Access',
-            icon: 'tool'
         },
         {
             path: '/login',

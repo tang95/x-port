@@ -8,7 +8,7 @@ import (
 type ComponentRepo interface {
 	Get(ctx context.Context, id string) (*domain.Component, error)
 	Create(ctx context.Context, component *domain.Component) (string, error)
-	Delete(ctx context.Context, id string) error
+	Update(ctx context.Context, id string, component *domain.Component) error
 	List(ctx context.Context, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error)
 }
 
