@@ -11,7 +11,7 @@ const (
 )
 
 type UserRepo interface {
-	List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery) (int32, []*domain.User, error)
+	List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery) ([]*domain.User, int32, error)
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Get(ctx context.Context, id string) (*domain.User, error)
 	Delete(ctx context.Context, id string) error

@@ -5,6 +5,7 @@
 import {TOKEN_NAME} from "@/constants";
 import {history, RequestConfig, RequestError, RunTimeLayoutConfig} from "@umijs/max";
 import {message} from "antd";
+import React from "react";
 
 export async function getInitialState(): Promise<API.AuthUser | null> {
     const str = localStorage.getItem(TOKEN_NAME);

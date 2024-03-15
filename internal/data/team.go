@@ -14,27 +14,62 @@ func newTeamRepo(data *Data) service.TeamRepo {
 	return &teamRepo{data}
 }
 
-func (t teamRepo) Create(ctx context.Context, team *domain.Team) (string, error) {
+func (repo *teamRepo) Create(ctx context.Context, team *domain.Team) (string, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t teamRepo) Get(ctx context.Context, id string) (*domain.Team, error) {
+func (repo *teamRepo) Get(ctx context.Context, id string) (*domain.Team, error) {
+	team := &domain.Team{}
+	tx := repo.DB(ctx).Where("id = ?", id).First(&team)
+	return team, tx.Error
+}
+
+func (repo *teamRepo) Delete(ctx context.Context, id string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t teamRepo) Delete(ctx context.Context, id string) error {
+func (repo *teamRepo) Update(ctx context.Context, id string, team *domain.Team) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t teamRepo) Update(ctx context.Context, id string, team *domain.Team) error {
-	//TODO implement me
-	panic("implement me")
+func (repo *teamRepo) List(ctx context.Context, filter *domain.ListTeamFilter, page *domain.PageQuery) ([]*domain.Team, int32, error) {
+	var (
+		teams []*domain.Team
+		total int64
+	)
+	tx := repo.DB(ctx).Model(&domain.Team{})
+	tx = tx.Count(&total)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if page != nil {
+		tx = tx.Offset(page.GetOffset()).
+			Limit(page.GetLimit()).
+			Order(page.GetOrder())
+	}
+	tx = tx.Find(&teams)
+	return teams, int32(total), tx.Error
 }
 
-func (t teamRepo) List(ctx context.Context, filter *domain.ListTeamFilter, page *domain.PageQuery) (int32, []*domain.Team, error) {
-	//TODO implement me
-	panic("implement me")
+func (repo *teamRepo) ListMember(ctx context.Context, id string, filter *domain.ListUserFilter, page *domain.PageQuery) ([]*domain.User, int32, error) {
+	var (
+		users []*domain.User
+		total int64
+	)
+	tx := repo.DB(ctx).Model(&domain.User{}).
+		Joins("inner join team_user on user_id = user.id and team_id = ?", id)
+	tx = tx.Count(&total)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if page != nil {
+		tx = tx.Offset(page.GetOffset()).
+			Limit(page.GetLimit()).
+			Order(page.GetOrder())
+	}
+	tx = tx.Find(&users)
+	return users, int32(total), tx.Error
 }

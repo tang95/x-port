@@ -12,17 +12,15 @@ import (
 )
 
 // Owner is the resolver for the owner field.
-func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*model.User, error) {
+func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*model.Team, error) {
 	if obj.Owner != nil && obj.Owner.ID != "" {
-		user, err := r.userRepo.Get(ctx, obj.Owner.ID)
+		team, err := r.teamRepo.Get(ctx, obj.Owner.ID)
 		if err != nil {
 			return nil, err
 		}
-		return &model.User{
-			ID:          user.ID,
-			Name:        user.Name,
-			Description: &user.Description,
-			Avatar:      &user.Avatar,
+		return &model.Team{
+			ID:   team.ID,
+			Name: team.Name,
 		}, nil
 	}
 	return nil, nil
@@ -30,56 +28,45 @@ func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*m
 
 // Components is the resolver for the components field.
 func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
-	if obj.Components.Total > 0 {
-		subComponentIDs := make([]string, obj.Components.Total)
-		for i, component := range obj.Components.Data {
-			subComponentIDs[i] = component.ID
+	var orderQuery domain.OrderQuery
+	var listFilter domain.ListComponentFilter
+	if page.Order != nil {
+		orderQuery = domain.OrderQuery{
+			Field:     page.Order.Fields,
+			Direction: domain.Direction(page.Order.Direction),
 		}
-		var orderQuery domain.OrderQuery
-		listFilter := domain.ListComponentFilter{
-			ComponentIDs: subComponentIDs,
-		}
-		if page.Order != nil {
-			orderQuery = domain.OrderQuery{
-				Field:     page.Order.Fields,
-				Direction: domain.Direction(page.Order.Direction),
-			}
-		}
-		if filter != nil {
-			if filter.TeamID != nil {
-				listFilter.TeamID = *filter.TeamID
-			}
-			if filter.Type != nil {
-				listFilter.Type = domain.ComponentType(*filter.Type)
-			}
-			if filter.Lifecycle != nil {
-				listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
-			}
-			if filter.Keywords != nil {
-				listFilter.Keywords = *filter.Keywords
-			}
-		}
-		components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
-			Page:  int32(page.Page),
-			Size:  int32(page.Size),
-			Order: &orderQuery,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if total == 0 {
-			return &model.ComponentConnection{}, nil
-		}
-		data := make([]*model.Component, len(components))
-		for i, component := range components {
-			data[i] = componentModelToDomain(component)
-		}
-		return &model.ComponentConnection{
-			Total: int(total),
-			Data:  data,
-		}, nil
 	}
-	return nil, nil
+	if filter != nil {
+		listFilter = domain.ListComponentFilter{}
+		if filter.TeamID != nil {
+			listFilter.TeamID = *filter.TeamID
+		}
+		if filter.Type != nil {
+			listFilter.Type = domain.ComponentType(*filter.Type)
+		}
+		if filter.Lifecycle != nil {
+			listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
+		}
+		if filter.Keywords != nil {
+			listFilter.Keywords = *filter.Keywords
+		}
+	}
+	components, total, err := r.componentRepo.ListDependency(ctx, obj.ID, &listFilter, &domain.PageQuery{
+		Page:  int32(page.Page),
+		Size:  int32(page.Size),
+		Order: &orderQuery,
+	})
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.Component, len(components))
+	for i, component := range components {
+		data[i] = componentModelToDomain(component)
+	}
+	return &model.ComponentConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
 }
 
 // ListComponent is the resolver for the listComponent field.
@@ -117,15 +104,9 @@ func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput,
 	if err != nil {
 		return nil, err
 	}
-	if total == 0 {
-		return &model.ComponentConnection{
-			Total: 0,
-			Data:  nil,
-		}, nil
-	}
-	data := make([]*model.Component, 0)
-	for _, component := range components {
-		data = append(data, componentModelToDomain(component))
+	data := make([]*model.Component, total)
+	for i, component := range components {
+		data[i] = componentModelToDomain(component)
 	}
 	result := &model.ComponentConnection{
 		Total: int(total),
@@ -144,14 +125,142 @@ func (r *queryResolver) GetComponent(ctx context.Context, id string) (*model.Com
 	return result, nil
 }
 
+// ListTeam is the resolver for the listTeam field.
+func (r *queryResolver) ListTeam(ctx context.Context, page model.PageInput) (*model.TeamConnection, error) {
+	var (
+		orderQuery domain.OrderQuery
+	)
+	if page.Order != nil {
+		orderQuery = domain.OrderQuery{
+			Field:     page.Order.Fields,
+			Direction: domain.Direction(page.Order.Direction),
+		}
+	}
+	teams, total, err := r.teamRepo.List(ctx, &domain.ListTeamFilter{}, &domain.PageQuery{
+		Page:  int32(page.Page),
+		Size:  int32(page.Size),
+		Order: &orderQuery,
+	})
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.Team, total)
+	for i, team := range teams {
+		data[i] = &model.Team{
+			ID:   team.ID,
+			Name: team.Name,
+		}
+	}
+	return &model.TeamConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
+}
+
+// GetTeam is the resolver for the getTeam field.
+func (r *queryResolver) GetTeam(ctx context.Context, id string) (*model.Team, error) {
+	team, err := r.teamRepo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Team{
+		ID:   team.ID,
+		Name: team.Name,
+	}, nil
+}
+
+// ListUser is the resolver for the listUser field.
+func (r *queryResolver) ListUser(ctx context.Context, page model.PageInput) (*model.UserConnection, error) {
+	var (
+		orderQuery domain.OrderQuery
+	)
+	if page.Order != nil {
+		orderQuery = domain.OrderQuery{
+			Field:     page.Order.Fields,
+			Direction: domain.Direction(page.Order.Direction),
+		}
+	}
+	users, total, err := r.userRepo.List(ctx, &domain.ListUserFilter{}, &domain.PageQuery{
+		Page:  int32(page.Page),
+		Size:  int32(page.Size),
+		Order: &orderQuery,
+	})
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.User, total)
+	for i, user := range users {
+		data[i] = &model.User{
+			ID:   user.ID,
+			Name: user.Name,
+		}
+	}
+	return &model.UserConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
+}
+
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
+	user, err := r.userRepo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.User{
+		ID:          user.ID,
+		Name:        user.Name,
+		Description: &user.Description,
+		Avatar:      &user.Avatar,
+	}, nil
+}
+
+// Members is the resolver for the members field.
+func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.PageInput) (*model.UserConnection, error) {
+	var (
+		orderQuery domain.OrderQuery
+	)
+	if page.Order != nil {
+		orderQuery = domain.OrderQuery{
+			Field:     page.Order.Fields,
+			Direction: domain.Direction(page.Order.Direction),
+		}
+	}
+	members, total, err := r.teamRepo.ListMember(ctx, obj.ID, &domain.ListUserFilter{}, &domain.PageQuery{
+		Page:  int32(page.Page),
+		Size:  int32(page.Size),
+		Order: &orderQuery,
+	})
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.User, total)
+	for i, member := range members {
+		data[i] = &model.User{
+			ID:          member.ID,
+			Name:        member.Name,
+			Description: &member.Description,
+			Avatar:      &member.Avatar,
+		}
+	}
+	return &model.UserConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
+}
+
 // Component returns ComponentResolver implementation.
 func (r *Resolver) Component() ComponentResolver { return &componentResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Team returns TeamResolver implementation.
+func (r *Resolver) Team() TeamResolver { return &teamResolver{r} }
+
 type componentResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type teamResolver struct{ *Resolver }
 
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
@@ -166,10 +275,10 @@ func componentModelToDomain(component *domain.Component) *model.Component {
 		Description: &component.Description,
 		Type:        string(component.Type),
 		Lifecycle:   string(component.Lifecycle),
-		Owner: &model.User{
-			ID:   component.OwnerID,
-			Name: "",
+		Owner: &model.Team{
+			ID: component.OwnerID,
 		},
+		Tier:        string(component.Tier),
 		Tags:        component.Tags,
 		Annotations: component.Annotations,
 		CreatedAt:   component.CreatedAt,
@@ -185,20 +294,6 @@ func componentModelToDomain(component *domain.Component) *model.Component {
 			})
 		}
 		result.Links = links
-	}
-	if len(component.ComponentIDs) > 0 {
-		subComponentConnection := &model.ComponentConnection{
-			Total: len(component.ComponentIDs),
-			Data:  nil,
-		}
-		components := make([]*model.Component, len(component.ComponentIDs))
-		for i, componentID := range component.ComponentIDs {
-			components[i] = &model.Component{
-				ID: componentID,
-			}
-		}
-		subComponentConnection.Data = components
-		result.Components = subComponentConnection
 	}
 	return result
 }

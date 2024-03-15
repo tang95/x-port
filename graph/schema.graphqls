@@ -4,6 +4,10 @@ scalar Map
 type Query {
     listComponent(page: PageInput!, filter: ComponentFilter): ComponentConnection!
     getComponent(id: ID!): Component!
+    listTeam(page: PageInput!): TeamConnection!
+    getTeam(id: ID!): Team!
+    listUser(page: PageInput!): UserConnection!
+    getUser(id: ID!): User!
 }
 
 input OrderInput {
@@ -34,7 +38,8 @@ type Component {
     description: String
     type: String!
     lifecycle: String!
-    owner: User!
+    owner: Team!
+    tier: String!
 
     links: [Link!]
     tags: [String!]
@@ -61,4 +66,20 @@ type User {
     name: String!
     description: String
     avatar: String
+}
+
+type UserConnection {
+    total: Int!
+    data: [User!]
+}
+
+type TeamConnection {
+    total: Int!
+    data: [Team!]
+}
+
+type Team {
+    id: ID!
+    name: String!
+    members(page: PageInput!): UserConnection!
 }

@@ -8,7 +8,6 @@ export default defineConfig({
     model: {},
     initialState: {},
     request: {},
-    reactQuery: {},
     layout: {
         title: 'X-Port',
     },
@@ -30,7 +29,7 @@ export default defineConfig({
             icon: 'home'
         },
         {
-            name: '软件目录',
+            name: '组件',
             path: '/component',
             component: './Component',
             icon: 'appstore'

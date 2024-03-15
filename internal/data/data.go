@@ -27,7 +27,13 @@ func NewData(config *config.Server, logger *zap.Logger) (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = database.AutoMigrate(&domain.Component{}, &domain.Team{}, &domain.User{})
+	err = database.AutoMigrate(
+		&domain.Component{},
+		&domain.Team{},
+		&domain.User{},
+		&domain.ComponentComponent{},
+		&domain.TeamUser{},
+	)
 	if err != nil {
 		logger.Error("failed to auto migrate database", zap.Error(err))
 		return nil, err

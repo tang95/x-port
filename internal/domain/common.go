@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -25,6 +26,13 @@ func (pagination *PageQuery) GetOffset() int {
 
 func (pagination *PageQuery) GetLimit() int {
 	return int(pagination.Size)
+}
+
+func (pagination *PageQuery) GetOrder() string {
+	if pagination.Order != nil && pagination.Order.Direction != "" && pagination.Order.Field != nil {
+		return strings.Join(pagination.Order.Field, ",") + " " + string(pagination.Order.Direction)
+	}
+	return ""
 }
 
 type OrderQuery struct {

@@ -1,17 +1,18 @@
 import {LoginForm} from '@ant-design/pro-components';
 import React from "react";
 import styles from './index.less';
-import {Helmet, useQuery} from '@umijs/max';
+import {Helmet} from '@umijs/max';
 import {Divider, Flex, Spin} from 'antd';
 import {AuthService} from "@/services";
 import Github from "./component/Github";
 import Gitlab from "./component/Gitlab";
+import useRequest from "@ahooksjs/use-request";
 
 const LoginPage: React.FC = () => {
-    const {data, isLoading} = useQuery({ queryKey: ['auth', 'providers'], queryFn: AuthService.providers });
+    const {data, loading} = useRequest(AuthService.providers);
 
     const methods = () => {
-        if (isLoading) {
+        if (loading) {
             return (
                 <Flex justify={"center"} align={"center"} gap={"middle"}>
                     <Spin/>
