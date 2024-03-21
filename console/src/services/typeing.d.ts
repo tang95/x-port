@@ -47,4 +47,25 @@ declare namespace API {
         total: number;
         data: T[];
     }
+
+    type ComponentFilter = {
+        keywords?: string;
+        lifecycle?: string;
+        tier?: string;
+        type?: string;
+        owner?: string;
+        tags?: string[];
+    }
+
+    type PageInput = {
+        page: number;
+        size: number;
+        order?: OrderInput;
+    }
+
+    type OrderInput = {
+        fields: string[]
+        direction: "ASC" | "DESC"
+    }
+
 }

@@ -6,6 +6,7 @@ import {Button, Card, Col, Input, Row, Space} from "antd";
 import styles from "./index.less";
 import {Link} from "@umijs/max";
 import {LinkOutlined} from "@ant-design/icons";
+import {ComponentType, LifeCycle, Tier} from "@/constants/component";
 
 const ComponentPage: React.FC = () => {
     const columns: ProColumnType<API.Component>[] = [
@@ -23,43 +24,13 @@ const ComponentPage: React.FC = () => {
             title: '层级',
             dataIndex: 'tier',
             valueType: "select",
-            valueEnum: {
-                "tier1": {
-                    text: "第一层",
-                    color: "rgba(94,0,150,0.9)"
-                },
-                "tier2": {
-                    text: "第二层",
-                    color: "rgba(94,0,150,0.6)"
-                },
-                "tier3": {
-                    text: "第三层",
-                    color: "rgba(94,0,150,0.30)"
-                },
-                "tier4": {
-                    text: "第四层",
-                    color: "rgba(94,0,150,0.10)"
-                }
-            },
+            valueEnum: Tier,
             width: 100
         },
         {
             title: '生命周期',
             dataIndex: 'lifecycle',
-            valueEnum: {
-                "stabled": {
-                    text: "稳定",
-                    color: "green"
-                },
-                "alpha": {
-                    text: "实验",
-                    color: "blue"
-                },
-                "destroy": {
-                    text: "销毁",
-                    color: "grey"
-                },
-            },
+            valueEnum: LifeCycle,
             width: 100
         },
         {
@@ -90,11 +61,14 @@ const ComponentPage: React.FC = () => {
             dataIndex: 'description',
         },
     ]
-    const {data, loading} = useRequest(ComponentService.listComponents, {
-        defaultParams: [{
-            page: {size: 10, page: 1}
-        }]
-    })
+
+    const [page, setPage] = React.useState<API.PageInput>({page: 1, size: 10})
+    const [fitter, setFilter] = React.useState<API.ComponentFilter>({})
+
+    const {data, loading} = useRequest(
+        () => ComponentService.listComponents(page, fitter),
+        {refreshDeps: [page, fitter], debounceInterval: 500}
+    )
     return (
         <PageContainer
             subTitle={"搜索发现组织内部所有软件组件"}
@@ -106,23 +80,37 @@ const ComponentPage: React.FC = () => {
             }
         >
             <Card>
-                <Row justify={"center"} gutter={[12, 24]}>
+                <Row justify={"center"} gutter={[10, 10]}>
                     <Col span={18}>
-                        <Input.Search placeholder={"搜索组件"} size={"large"}/>
+                        <Input.Search onChange={(event) => {
+                            setFilter({
+                                ...fitter,
+                                keywords: event.currentTarget.value
+                            });
+                        }} placeholder={"搜索组件"} size={"large"}/>
                     </Col>
                     <Col span={18}>
-                        <LightFilter bordered>
-                            <ProFormSelect placeholder={"类型"}/>
-                            <ProFormSelect placeholder={"层级"}/>
-                            <ProFormSelect placeholder={"负责团队"}/>
-                            <ProFormSelect placeholder={"生命周期"}/>
-                            <ProFormSelect placeholder={"标签"}/>
+                        <LightFilter onFinish={async (formData) => {
+                            setFilter({
+                                ...fitter,
+                                type: formData.type,
+                                tags: formData.tags,
+                                owner: formData.owner,
+                                lifecycle: formData.lifecycle,
+                                tier: formData.tier
+                            });
+                        }}>
+                            <ProFormSelect placeholder={"类型"} name={"type"} valueEnum={ComponentType}/>
+                            <ProFormSelect placeholder={"层级"} name={"tier"} valueEnum={Tier}/>
+                            <ProFormSelect placeholder={"负责团队"} name={"owner"} showSearch/>
+                            <ProFormSelect placeholder={"生命周期"} name={"lifecycle"} valueEnum={LifeCycle}/>
+                            <ProFormSelect placeholder={"标签"} name={"tags"} mode={"multiple"} showSearch/>
                         </LightFilter>
                     </Col>
                 </Row>
                 <ProTable columns={columns} rowKey={"id"} className={styles.tableContainer}
                           dataSource={data?.data} pagination={{total: 200}} search={false}
-                          options={false}/>
+                          options={false} loading={loading}/>
             </Card>
         </PageContainer>
     )

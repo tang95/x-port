@@ -1,6 +1,6 @@
 import {request} from '@umijs/max';
 
-export async function listComponents(variables: any): Promise<API.PageResponse<API.Component>> {
+export async function listComponents(page: API.PageInput, filter: API.ComponentFilter): Promise<API.PageResponse<API.Component>> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',
         data: {
@@ -29,7 +29,10 @@ export async function listComponents(variables: any): Promise<API.PageResponse<A
                 }
             }
             `,
-            variables: variables
+            variables: {
+                page: page,
+                filter: filter
+            }
         },
     })
     return data.listComponent

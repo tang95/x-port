@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/tang95/x-port/graph/model"
 	"github.com/tang95/x-port/internal/domain"
 )

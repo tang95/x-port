@@ -27,6 +27,8 @@ const (
 	Service ComponentType = "service"
 	// Library 库
 	Library ComponentType = "library"
+	// Website 网站
+	Website ComponentType = "website"
 )
 
 type LinkType string
@@ -34,8 +36,8 @@ type LinkType string
 const (
 	// Doc 文档
 	Doc LinkType = "doc"
-	// Website 网站
-	Website LinkType = "website"
+	// Home 网站
+	Home LinkType = "home"
 	// Repository 仓库
 	Repository LinkType = "repository"
 )
