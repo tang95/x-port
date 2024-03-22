@@ -43,6 +43,12 @@ func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponen
 	if len(filter.ComponentIDs) > 0 {
 		tx = tx.Where("id in ?", filter.ComponentIDs)
 	}
+	if filter.Tier != "" {
+		tx = tx.Where("tier = ?", filter.Tier)
+	}
+	if filter.TeamID != "" {
+		tx = tx.Where("owner_id = ?", filter.TeamID)
+	}
 	tx = tx.Count(&total)
 	if tx.Error != nil {
 		return nil, 0, tx.Error

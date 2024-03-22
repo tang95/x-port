@@ -4381,7 +4381,7 @@ func (ec *executionContext) unmarshalInputComponentFilter(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"keywords", "type", "lifecycle", "teamID"}
+	fieldsInOrder := [...]string{"keywords", "tier", "type", "lifecycle", "owner", "tags"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4395,6 +4395,13 @@ func (ec *executionContext) unmarshalInputComponentFilter(ctx context.Context, o
 				return it, err
 			}
 			it.Keywords = data
+		case "tier":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tier"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tier = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -4409,13 +4416,20 @@ func (ec *executionContext) unmarshalInputComponentFilter(ctx context.Context, o
 				return it, err
 			}
 			it.Lifecycle = data
-		case "teamID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teamID"))
+		case "owner":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("owner"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TeamID = data
+			it.Owner = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
 		}
 	}
 

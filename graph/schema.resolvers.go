@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+
 	"github.com/tang95/x-port/graph/model"
 	"github.com/tang95/x-port/internal/domain"
 )
@@ -37,8 +38,8 @@ func (r *componentResolver) Components(ctx context.Context, obj *model.Component
 	}
 	if filter != nil {
 		listFilter = domain.ListComponentFilter{}
-		if filter.TeamID != nil {
-			listFilter.TeamID = *filter.TeamID
+		if filter.Owner != nil {
+			listFilter.TeamID = *filter.Owner
 		}
 		if filter.Type != nil {
 			listFilter.Type = domain.ComponentType(*filter.Type)
@@ -82,8 +83,8 @@ func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput,
 	}
 	if filter != nil {
 		listFilter = domain.ListComponentFilter{}
-		if filter.TeamID != nil {
-			listFilter.TeamID = *filter.TeamID
+		if filter.Owner != nil {
+			listFilter.TeamID = *filter.Owner
 		}
 		if filter.Type != nil {
 			listFilter.Type = domain.ComponentType(*filter.Type)
@@ -94,6 +95,12 @@ func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput,
 		if filter.Keywords != nil {
 			listFilter.Keywords = *filter.Keywords
 		}
+		if filter.Tier != nil {
+			listFilter.Tier = domain.Tier(*filter.Tier)
+		}
+		if filter.Tags != nil {
+			listFilter.Tags = filter.Tags
+		}
 	}
 	components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
 		Page:  int32(page.Page),
@@ -103,7 +110,7 @@ func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput,
 	if err != nil {
 		return nil, err
 	}
-	data := make([]*model.Component, total)
+	data := make([]*model.Component, len(components))
 	for i, component := range components {
 		data[i] = componentModelToDomain(component)
 	}
@@ -143,7 +150,7 @@ func (r *queryResolver) ListTeam(ctx context.Context, page model.PageInput) (*mo
 	if err != nil {
 		return nil, err
 	}
-	data := make([]*model.Team, total)
+	data := make([]*model.Team, len(teams))
 	for i, team := range teams {
 		data[i] = &model.Team{
 			ID:   team.ID,
@@ -187,7 +194,7 @@ func (r *queryResolver) ListUser(ctx context.Context, page model.PageInput) (*mo
 	if err != nil {
 		return nil, err
 	}
-	data := make([]*model.User, total)
+	data := make([]*model.User, len(users))
 	for i, user := range users {
 		data[i] = &model.User{
 			ID:   user.ID,
@@ -233,7 +240,7 @@ func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.
 	if err != nil {
 		return nil, err
 	}
-	data := make([]*model.User, total)
+	data := make([]*model.User, len(members))
 	for i, member := range members {
 		data[i] = &model.User{
 			ID:          member.ID,

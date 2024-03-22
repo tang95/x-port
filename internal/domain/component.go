@@ -81,4 +81,6 @@ type ListComponentFilter struct {
 	Type         ComponentType `json:"type,omitempty"`
 	Lifecycle    Lifecycle     `json:"lifecycle,omitempty"`
 	TeamID       string        `json:"teamID,omitempty"`
+	Tier         Tier          `json:"tier,omitempty"`
+	Tags         []string      `json:"tags,omitempty"`
 }

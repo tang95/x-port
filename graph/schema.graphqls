@@ -51,9 +51,11 @@ type Component {
 
 input ComponentFilter {
     keywords: String
+    tier: String
     type: String
     lifecycle: String
-    teamID: String
+    owner: String
+    tags: [String!]
 }
 
 type ComponentConnection {

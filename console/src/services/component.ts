@@ -5,8 +5,8 @@ export async function listComponents(page: API.PageInput, filter: API.ComponentF
         method: 'POST',
         data: {
             query: `#graphql
-            query MyQuery($page: PageInput!) {
-                listComponent(page: $page) {
+            query MyQuery($page: PageInput!, $filter: ComponentFilter) {
+                listComponent(page: $page, filter: $filter) {
                     data {
                         id
                         name

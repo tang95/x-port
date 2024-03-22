@@ -31,10 +31,12 @@ type ComponentConnection struct {
 }
 
 type ComponentFilter struct {
-	Keywords  *string `json:"keywords,omitempty"`
-	Type      *string `json:"type,omitempty"`
-	Lifecycle *string `json:"lifecycle,omitempty"`
-	TeamID    *string `json:"teamID,omitempty"`
+	Keywords  *string  `json:"keywords,omitempty"`
+	Tier      *string  `json:"tier,omitempty"`
+	Type      *string  `json:"type,omitempty"`
+	Lifecycle *string  `json:"lifecycle,omitempty"`
+	Owner     *string  `json:"owner,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
 }
 
 type Link struct {

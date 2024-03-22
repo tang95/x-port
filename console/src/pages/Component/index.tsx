@@ -1,17 +1,17 @@
 import React from "react";
 import {LightFilter, PageContainer, ProColumnType, ProFormSelect, ProTable} from "@ant-design/pro-components";
-import useRequest from "@ahooksjs/use-request";
-import {ComponentService} from "@/services";
 import {Button, Card, Col, Input, Row, Space} from "antd";
 import styles from "./index.less";
 import {Link} from "@umijs/max";
 import {LinkOutlined} from "@ant-design/icons";
 import {ComponentType, LifeCycle, Tier} from "@/constants/component";
+import {ComponentService, TeamService} from "@/services";
 
 const ComponentPage: React.FC = () => {
     const columns: ProColumnType<API.Component>[] = [
         {
             title: '组件',
+            sorter: true,
             dataIndex: 'name',
             render: (dom, record) => {
                 return <Link to={"/"}>
@@ -62,13 +62,14 @@ const ComponentPage: React.FC = () => {
         },
     ]
 
-    const [page, setPage] = React.useState<API.PageInput>({page: 1, size: 10})
-    const [fitter, setFilter] = React.useState<API.ComponentFilter>({})
-
-    const {data, loading} = useRequest(
-        () => ComponentService.listComponents(page, fitter),
-        {refreshDeps: [page, fitter], debounceInterval: 500}
-    )
+    const [filter, setFilter] = React.useState<API.ComponentFilter>({})
+    const fetchTeams = async () => {
+        const response = await TeamService.listTeam({page: 1, size: 5});
+        return response.data.map(team => ({
+            label: team.name,
+            value: team.id,
+        }));
+    }
     return (
         <PageContainer
             subTitle={"搜索发现组织内部所有软件组件"}
@@ -84,7 +85,7 @@ const ComponentPage: React.FC = () => {
                     <Col span={18}>
                         <Input.Search onChange={(event) => {
                             setFilter({
-                                ...fitter,
+                                ...filter,
                                 keywords: event.currentTarget.value
                             });
                         }} placeholder={"搜索组件"} size={"large"}/>
@@ -92,7 +93,7 @@ const ComponentPage: React.FC = () => {
                     <Col span={18}>
                         <LightFilter onFinish={async (formData) => {
                             setFilter({
-                                ...fitter,
+                                ...filter,
                                 type: formData.type,
                                 tags: formData.tags,
                                 owner: formData.owner,
@@ -102,15 +103,27 @@ const ComponentPage: React.FC = () => {
                         }}>
                             <ProFormSelect placeholder={"类型"} name={"type"} valueEnum={ComponentType}/>
                             <ProFormSelect placeholder={"层级"} name={"tier"} valueEnum={Tier}/>
-                            <ProFormSelect placeholder={"负责团队"} name={"owner"} showSearch/>
                             <ProFormSelect placeholder={"生命周期"} name={"lifecycle"} valueEnum={LifeCycle}/>
+                            <ProFormSelect placeholder={"负责团队"} name={"owner"} showSearch request={fetchTeams}/>
                             <ProFormSelect placeholder={"标签"} name={"tags"} mode={"multiple"} showSearch/>
                         </LightFilter>
                     </Col>
                 </Row>
-                <ProTable columns={columns} rowKey={"id"} className={styles.tableContainer}
-                          dataSource={data?.data} pagination={{total: 200}} search={false}
-                          options={false} loading={loading}/>
+                <ProTable columns={columns} rowKey={"id"} className={styles.tableContainer} search={false}
+                          params={filter} debounceTime={500} options={false} pagination={{pageSize: 10}}
+                          request={(params) => {
+                              return ComponentService.listComponents({
+                                  page: params.current ? params.current : 1,
+                                  size: params.pageSize ? params.pageSize : 10,
+                              }, {
+                                  keywords: params.keywords,
+                                  type: params.type,
+                                  tier: params.tier,
+                                  tags: params.tags,
+                                  owner: params.owner,
+                                  lifecycle: params.lifecycle,
+                              })
+                          }}/>
             </Card>
         </PageContainer>
     )
