@@ -10,5 +10,6 @@ type TeamRepo interface {
 	Get(ctx context.Context, id string) (*domain.Team, error)
 	Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, team *domain.Team) error
-	List(ctx context.Context, filter *domain.ListTeamFilter, page *domain.PageQuery) (int32, []*domain.Team, error)
+	List(ctx context.Context, filter *domain.ListTeamFilter, page *domain.PageQuery) ([]*domain.Team, int32, error)
+	ListMember(ctx context.Context, id string, filter *domain.ListUserFilter, page *domain.PageQuery) ([]*domain.User, int32, error)
 }

@@ -97,3 +97,7 @@ models:
         resolver: true
       owner:
         resolver: true
+  Team:
+    fields:
+      members:
+        resolver: true

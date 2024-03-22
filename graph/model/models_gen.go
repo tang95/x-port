@@ -15,7 +15,8 @@ type Component struct {
 	Description *string                `json:"description,omitempty"`
 	Type        string                 `json:"type"`
 	Lifecycle   string                 `json:"lifecycle"`
-	Owner       *User                  `json:"owner"`
+	Owner       *Team                  `json:"owner"`
+	Tier        string                 `json:"tier"`
 	Links       []*Link                `json:"links,omitempty"`
 	Tags        []string               `json:"tags,omitempty"`
 	Annotations map[string]interface{} `json:"annotations,omitempty"`
@@ -30,10 +31,12 @@ type ComponentConnection struct {
 }
 
 type ComponentFilter struct {
-	Keywords  *string `json:"keywords,omitempty"`
-	Type      *string `json:"type,omitempty"`
-	Lifecycle *string `json:"lifecycle,omitempty"`
-	TeamID    *string `json:"teamID,omitempty"`
+	Keywords  *string  `json:"keywords,omitempty"`
+	Tier      *string  `json:"tier,omitempty"`
+	Type      *string  `json:"type,omitempty"`
+	Lifecycle *string  `json:"lifecycle,omitempty"`
+	Owner     *string  `json:"owner,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
 }
 
 type Link struct {
@@ -56,11 +59,27 @@ type PageInput struct {
 type Query struct {
 }
 
+type Team struct {
+	ID      string          `json:"id"`
+	Name    string          `json:"name"`
+	Members *UserConnection `json:"members"`
+}
+
+type TeamConnection struct {
+	Total int     `json:"total"`
+	Data  []*Team `json:"data,omitempty"`
+}
+
 type User struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`
 	Avatar      *string `json:"avatar,omitempty"`
+}
+
+type UserConnection struct {
+	Total int     `json:"total"`
+	Data  []*User `json:"data,omitempty"`
 }
 
 type SortDirection string

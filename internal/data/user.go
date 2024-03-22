@@ -37,9 +37,23 @@ func newUserRepo(data *Data) service.UserRepo {
 	return &userRepo{data}
 }
 
-func (repo *userRepo) List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery) (int32, []*domain.User, error) {
-	//TODO implement me
-	panic("implement me")
+func (repo *userRepo) List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery) ([]*domain.User, int32, error) {
+	var (
+		users []*domain.User
+		total int64
+	)
+	tx := repo.DB(ctx).Model(&domain.User{})
+	tx = tx.Count(&total)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if page != nil {
+		tx = tx.Offset(page.GetOffset()).
+			Limit(page.GetLimit()).
+			Order(page.GetOrder())
+	}
+	tx = tx.Find(&users)
+	return users, int32(total), tx.Error
 }
 
 func (repo *userRepo) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
