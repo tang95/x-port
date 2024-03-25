@@ -6,6 +6,7 @@ import {Link} from "@umijs/max";
 import {LinkOutlined} from "@ant-design/icons";
 import {ComponentType, LifeCycle, Tier} from "@/constants/component";
 import {ComponentService, TeamService} from "@/services";
+import {TableSortToApiSort} from "@/utils/sort";
 
 const ComponentPage: React.FC = () => {
     const columns: ProColumnType<API.Component>[] = [
@@ -111,7 +112,7 @@ const ComponentPage: React.FC = () => {
                 </Row>
                 <ProTable columns={columns} rowKey={"id"} className={styles.tableContainer} search={false}
                           params={filter} debounceTime={500} options={false} pagination={{pageSize: 10}}
-                          request={(params) => {
+                          request={(params, sort) => {
                               return ComponentService.listComponents({
                                   page: params.current ? params.current : 1,
                                   size: params.pageSize ? params.pageSize : 10,
@@ -122,7 +123,7 @@ const ComponentPage: React.FC = () => {
                                   tags: params.tags,
                                   owner: params.owner,
                                   lifecycle: params.lifecycle,
-                              })
+                              }, TableSortToApiSort(sort))
                           }}/>
             </Card>
         </PageContainer>

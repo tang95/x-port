@@ -60,11 +60,10 @@ declare namespace API {
     type PageInput = {
         page: number;
         size: number;
-        order?: OrderInput;
     }
 
-    type OrderInput = {
-        fields: string[]
+    type SortInput = {
+        field: string
         direction: "ASC" | "DESC"
     }
 

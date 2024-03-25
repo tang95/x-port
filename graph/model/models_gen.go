@@ -45,18 +45,17 @@ type Link struct {
 	Type  string `json:"type"`
 }
 
-type OrderInput struct {
-	Fields    []string      `json:"fields,omitempty"`
-	Direction SortDirection `json:"direction"`
-}
-
 type PageInput struct {
-	Page  int         `json:"page"`
-	Size  int         `json:"size"`
-	Order *OrderInput `json:"order,omitempty"`
+	Page int `json:"page"`
+	Size int `json:"size"`
 }
 
 type Query struct {
+}
+
+type SortInput struct {
+	Field     string        `json:"field"`
+	Direction SortDirection `json:"direction"`
 }
 
 type Team struct {

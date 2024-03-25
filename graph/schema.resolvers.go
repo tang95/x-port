@@ -27,14 +27,12 @@ func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*m
 }
 
 // Components is the resolver for the components field.
-func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
-	var orderQuery domain.OrderQuery
+func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
+	var sortQuery []*domain.SortQuery
 	var listFilter domain.ListComponentFilter
-	if page.Order != nil {
-		orderQuery = domain.OrderQuery{
-			Field:     page.Order.Fields,
-			Direction: domain.Direction(page.Order.Direction),
-		}
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+
 	}
 	if filter != nil {
 		listFilter = domain.ListComponentFilter{}
@@ -52,10 +50,9 @@ func (r *componentResolver) Components(ctx context.Context, obj *model.Component
 		}
 	}
 	components, total, err := r.componentRepo.ListDependency(ctx, obj.ID, &listFilter, &domain.PageQuery{
-		Page:  int32(page.Page),
-		Size:  int32(page.Size),
-		Order: &orderQuery,
-	})
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -70,15 +67,18 @@ func (r *componentResolver) Components(ctx context.Context, obj *model.Component
 }
 
 // ListComponent is the resolver for the listComponent field.
-func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
+func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
 	var (
 		listFilter domain.ListComponentFilter
-		orderQuery domain.OrderQuery
+		sortQuery  []*domain.SortQuery
 	)
-	if page.Order != nil {
-		orderQuery = domain.OrderQuery{
-			Field:     page.Order.Fields,
-			Direction: domain.Direction(page.Order.Direction),
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
 		}
 	}
 	if filter != nil {
@@ -103,10 +103,9 @@ func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput,
 		}
 	}
 	components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
-		Page:  int32(page.Page),
-		Size:  int32(page.Size),
-		Order: &orderQuery,
-	})
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -132,21 +131,23 @@ func (r *queryResolver) GetComponent(ctx context.Context, id string) (*model.Com
 }
 
 // ListTeam is the resolver for the listTeam field.
-func (r *queryResolver) ListTeam(ctx context.Context, page model.PageInput) (*model.TeamConnection, error) {
+func (r *queryResolver) ListTeam(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.TeamConnection, error) {
 	var (
-		orderQuery domain.OrderQuery
+		sortQuery []*domain.SortQuery
 	)
-	if page.Order != nil {
-		orderQuery = domain.OrderQuery{
-			Field:     page.Order.Fields,
-			Direction: domain.Direction(page.Order.Direction),
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
 		}
 	}
 	teams, total, err := r.teamRepo.List(ctx, &domain.ListTeamFilter{}, &domain.PageQuery{
-		Page:  int32(page.Page),
-		Size:  int32(page.Size),
-		Order: &orderQuery,
-	})
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -176,21 +177,23 @@ func (r *queryResolver) GetTeam(ctx context.Context, id string) (*model.Team, er
 }
 
 // ListUser is the resolver for the listUser field.
-func (r *queryResolver) ListUser(ctx context.Context, page model.PageInput) (*model.UserConnection, error) {
+func (r *queryResolver) ListUser(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error) {
 	var (
-		orderQuery domain.OrderQuery
+		sortQuery []*domain.SortQuery
 	)
-	if page.Order != nil {
-		orderQuery = domain.OrderQuery{
-			Field:     page.Order.Fields,
-			Direction: domain.Direction(page.Order.Direction),
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
 		}
 	}
 	users, total, err := r.userRepo.List(ctx, &domain.ListUserFilter{}, &domain.PageQuery{
-		Page:  int32(page.Page),
-		Size:  int32(page.Size),
-		Order: &orderQuery,
-	})
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -222,21 +225,23 @@ func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, er
 }
 
 // Members is the resolver for the members field.
-func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.PageInput) (*model.UserConnection, error) {
+func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error) {
 	var (
-		orderQuery domain.OrderQuery
+		sortQuery []*domain.SortQuery
 	)
-	if page.Order != nil {
-		orderQuery = domain.OrderQuery{
-			Field:     page.Order.Fields,
-			Direction: domain.Direction(page.Order.Direction),
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
 		}
 	}
 	members, total, err := r.teamRepo.ListMember(ctx, obj.ID, &domain.ListUserFilter{}, &domain.PageQuery{
-		Page:  int32(page.Page),
-		Size:  int32(page.Size),
-		Order: &orderQuery,
-	})
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
 	if err != nil {
 		return nil, err
 	}

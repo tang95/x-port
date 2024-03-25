@@ -2,16 +2,16 @@ scalar Time
 scalar Map
 
 type Query {
-    listComponent(page: PageInput!, filter: ComponentFilter): ComponentConnection!
+    listComponent(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
     getComponent(id: ID!): Component!
-    listTeam(page: PageInput!): TeamConnection!
+    listTeam(page: PageInput!, sort: [SortInput!]): TeamConnection!
     getTeam(id: ID!): Team!
-    listUser(page: PageInput!): UserConnection!
+    listUser(page: PageInput!, sort: [SortInput!]): UserConnection!
     getUser(id: ID!): User!
 }
 
-input OrderInput {
-    fields: [String!]
+input SortInput {
+    field: String!
     direction: SortDirection!
 }
 
@@ -23,7 +23,6 @@ enum SortDirection {
 input PageInput {
     page: Int!
     size: Int!
-    order: OrderInput
 }
 
 type Link {
@@ -44,7 +43,7 @@ type Component {
     links: [Link!]
     tags: [String!]
     annotations: Map
-    components(page: PageInput!, filter: ComponentFilter): ComponentConnection!
+    components(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
     createdAt: Time!
     updatedAt: Time!
 }
@@ -83,5 +82,5 @@ type TeamConnection {
 type Team {
     id: ID!
     name: String!
-    members(page: PageInput!): UserConnection!
+    members(page: PageInput!, sort: [SortInput!]): UserConnection!
 }

@@ -25,7 +25,7 @@ func (repo *componentRepo) Create(ctx context.Context, component *domain.Compone
 	return component.ID, tx.Error
 }
 
-func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error) {
+func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error) {
 	var (
 		components []*domain.Component
 		total      int64
@@ -54,7 +54,12 @@ func (repo *componentRepo) List(ctx context.Context, filter *domain.ListComponen
 		return nil, 0, tx.Error
 	}
 	if page != nil {
-		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit()).Order(page.GetOrder())
+		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit())
+	}
+	if sort != nil {
+		for _, s := range sort {
+			tx = tx.Order(s.Field + " " + string(s.Direction))
+		}
 	}
 	tx = tx.Find(&components)
 	return components, int32(total), tx.Error
@@ -64,7 +69,7 @@ func (repo *componentRepo) Update(ctx context.Context, id string, component *dom
 	return repo.DB(ctx).Model(&domain.Component{}).Where("id = ?", id).Updates(component).Error
 }
 
-func (repo *componentRepo) ListDependency(ctx context.Context, id string, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error) {
+func (repo *componentRepo) ListDependency(ctx context.Context, id string, filter *domain.ListComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error) {
 	var (
 		components []*domain.Component
 		total      int64
@@ -88,13 +93,18 @@ func (repo *componentRepo) ListDependency(ctx context.Context, id string, filter
 		return nil, 0, tx.Error
 	}
 	if page != nil {
-		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit()).Order(page.GetOrder())
+		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit())
+	}
+	if sort != nil {
+		for _, s := range sort {
+			tx = tx.Order(s.Field + " " + string(s.Direction))
+		}
 	}
 	tx = tx.Find(&components)
 	return components, int32(total), tx.Error
 }
 
-func (repo *componentRepo) ListDependents(ctx context.Context, id string, filter *domain.ListComponentFilter, page *domain.PageQuery) ([]*domain.Component, int32, error) {
+func (repo *componentRepo) ListDependents(ctx context.Context, id string, filter *domain.ListComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error) {
 	//TODO implement me
 	panic("implement me")
 }
