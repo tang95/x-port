@@ -22,3 +22,15 @@ func (controller *Controller) createComponent() gin.HandlerFunc {
 		ctx.JSON(200, component)
 	}
 }
+
+func (controller *Controller) queryComponentTag() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		tags, err := controller.componentRepo.QueryTags(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": err.Error(),
+			})
+		}
+		ctx.JSON(200, tags)
+	}
+}

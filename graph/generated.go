@@ -77,12 +77,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetComponent  func(childComplexity int, id string) int
-		GetTeam       func(childComplexity int, id string) int
-		GetUser       func(childComplexity int, id string) int
-		ListComponent func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
-		ListTeam      func(childComplexity int, page model.PageInput, sort []*model.SortInput) int
-		ListUser      func(childComplexity int, page model.PageInput, sort []*model.SortInput) int
+		GetComponent    func(childComplexity int, id string) int
+		GetTeam         func(childComplexity int, id string) int
+		GetUser         func(childComplexity int, id string) int
+		QueryComponents func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
+		QueryTeams      func(childComplexity int, page model.PageInput, sort []*model.SortInput) int
+		QueryUsers      func(childComplexity int, page model.PageInput, sort []*model.SortInput) int
 	}
 
 	Team struct {
@@ -115,11 +115,11 @@ type ComponentResolver interface {
 	Components(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 }
 type QueryResolver interface {
-	ListComponent(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
+	QueryComponents(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 	GetComponent(ctx context.Context, id string) (*model.Component, error)
-	ListTeam(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.TeamConnection, error)
+	QueryTeams(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.TeamConnection, error)
 	GetTeam(ctx context.Context, id string) (*model.Team, error)
-	ListUser(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error)
+	QueryUsers(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
 }
 type TeamResolver interface {
@@ -312,41 +312,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
 
-	case "Query.listComponent":
-		if e.complexity.Query.ListComponent == nil {
+	case "Query.queryComponents":
+		if e.complexity.Query.QueryComponents == nil {
 			break
 		}
 
-		args, err := ec.field_Query_listComponent_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_queryComponents_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ListComponent(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput), args["filter"].(*model.ComponentFilter)), true
+		return e.complexity.Query.QueryComponents(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput), args["filter"].(*model.ComponentFilter)), true
 
-	case "Query.listTeam":
-		if e.complexity.Query.ListTeam == nil {
+	case "Query.queryTeams":
+		if e.complexity.Query.QueryTeams == nil {
 			break
 		}
 
-		args, err := ec.field_Query_listTeam_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_queryTeams_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ListTeam(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput)), true
+		return e.complexity.Query.QueryTeams(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput)), true
 
-	case "Query.listUser":
-		if e.complexity.Query.ListUser == nil {
+	case "Query.queryUsers":
+		if e.complexity.Query.QueryUsers == nil {
 			break
 		}
 
-		args, err := ec.field_Query_listUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_queryUsers_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ListUser(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput)), true
+		return e.complexity.Query.QueryUsers(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput)), true
 
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
@@ -635,7 +635,7 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_listComponent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_queryComponents_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.PageInput
@@ -668,7 +668,7 @@ func (ec *executionContext) field_Query_listComponent_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_listTeam_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_queryTeams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.PageInput
@@ -692,7 +692,7 @@ func (ec *executionContext) field_Query_listTeam_args(ctx context.Context, rawAr
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_listUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_queryUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.PageInput
@@ -1616,8 +1616,8 @@ func (ec *executionContext) fieldContext_Link_type(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_listComponent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_listComponent(ctx, field)
+func (ec *executionContext) _Query_queryComponents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryComponents(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1630,7 +1630,7 @@ func (ec *executionContext) _Query_listComponent(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ListComponent(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput), fc.Args["filter"].(*model.ComponentFilter))
+		return ec.resolvers.Query().QueryComponents(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput), fc.Args["filter"].(*model.ComponentFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1647,7 +1647,7 @@ func (ec *executionContext) _Query_listComponent(ctx context.Context, field grap
 	return ec.marshalNComponentConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_listComponent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_queryComponents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1670,7 +1670,7 @@ func (ec *executionContext) fieldContext_Query_listComponent(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_listComponent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_queryComponents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1760,8 +1760,8 @@ func (ec *executionContext) fieldContext_Query_getComponent(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_listTeam(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_listTeam(ctx, field)
+func (ec *executionContext) _Query_queryTeams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryTeams(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1774,7 +1774,7 @@ func (ec *executionContext) _Query_listTeam(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ListTeam(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput))
+		return ec.resolvers.Query().QueryTeams(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1791,7 +1791,7 @@ func (ec *executionContext) _Query_listTeam(ctx context.Context, field graphql.C
 	return ec.marshalNTeamConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐTeamConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_listTeam(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_queryTeams(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1814,7 +1814,7 @@ func (ec *executionContext) fieldContext_Query_listTeam(ctx context.Context, fie
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_listTeam_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_queryTeams_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1884,8 +1884,8 @@ func (ec *executionContext) fieldContext_Query_getTeam(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_listUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_listUser(ctx, field)
+func (ec *executionContext) _Query_queryUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryUsers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1898,7 +1898,7 @@ func (ec *executionContext) _Query_listUser(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ListUser(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput))
+		return ec.resolvers.Query().QueryUsers(rctx, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1915,7 +1915,7 @@ func (ec *executionContext) _Query_listUser(ctx context.Context, field graphql.C
 	return ec.marshalNUserConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐUserConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_listUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_queryUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1938,7 +1938,7 @@ func (ec *executionContext) fieldContext_Query_listUser(ctx context.Context, fie
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_listUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_queryUsers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4815,7 +4815,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "listComponent":
+		case "queryComponents":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4824,7 +4824,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_listComponent(ctx, field)
+				res = ec._Query_queryComponents(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4859,7 +4859,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "listTeam":
+		case "queryTeams":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4868,7 +4868,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_listTeam(ctx, field)
+				res = ec._Query_queryTeams(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4903,7 +4903,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "listUser":
+		case "queryUsers":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4912,7 +4912,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_listUser(ctx, field)
+				res = ec._Query_queryUsers(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/tang95/x-port/graph/model"
 	"github.com/tang95/x-port/internal/domain"
 )
@@ -29,13 +28,13 @@ func (r *componentResolver) Owner(ctx context.Context, obj *model.Component) (*m
 // Components is the resolver for the components field.
 func (r *componentResolver) Components(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
 	var sortQuery []*domain.SortQuery
-	var listFilter domain.ListComponentFilter
+	var listFilter domain.ComponentFilter
 	if sort != nil {
 		sortQuery = make([]*domain.SortQuery, len(sort))
 
 	}
 	if filter != nil {
-		listFilter = domain.ListComponentFilter{}
+		listFilter = domain.ComponentFilter{}
 		if filter.Owner != nil {
 			listFilter.TeamID = *filter.Owner
 		}
@@ -49,7 +48,7 @@ func (r *componentResolver) Components(ctx context.Context, obj *model.Component
 			listFilter.Keywords = *filter.Keywords
 		}
 	}
-	components, total, err := r.componentRepo.ListDependency(ctx, obj.ID, &listFilter, &domain.PageQuery{
+	components, total, err := r.componentRepo.QueryDependency(ctx, obj.ID, &listFilter, &domain.PageQuery{
 		Page: int32(page.Page),
 		Size: int32(page.Size),
 	}, sortQuery)
@@ -66,60 +65,6 @@ func (r *componentResolver) Components(ctx context.Context, obj *model.Component
 	}, nil
 }
 
-// ListComponent is the resolver for the listComponent field.
-func (r *queryResolver) ListComponent(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
-	var (
-		listFilter domain.ListComponentFilter
-		sortQuery  []*domain.SortQuery
-	)
-	if sort != nil {
-		sortQuery = make([]*domain.SortQuery, len(sort))
-		for i, sortInput := range sort {
-			sortQuery[i] = &domain.SortQuery{
-				Field:     sortInput.Field,
-				Direction: domain.Direction(sortInput.Direction),
-			}
-		}
-	}
-	if filter != nil {
-		listFilter = domain.ListComponentFilter{}
-		if filter.Owner != nil {
-			listFilter.TeamID = *filter.Owner
-		}
-		if filter.Type != nil {
-			listFilter.Type = domain.ComponentType(*filter.Type)
-		}
-		if filter.Lifecycle != nil {
-			listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
-		}
-		if filter.Keywords != nil {
-			listFilter.Keywords = *filter.Keywords
-		}
-		if filter.Tier != nil {
-			listFilter.Tier = domain.Tier(*filter.Tier)
-		}
-		if filter.Tags != nil {
-			listFilter.Tags = filter.Tags
-		}
-	}
-	components, total, err := r.componentRepo.List(ctx, &listFilter, &domain.PageQuery{
-		Page: int32(page.Page),
-		Size: int32(page.Size),
-	}, sortQuery)
-	if err != nil {
-		return nil, err
-	}
-	data := make([]*model.Component, len(components))
-	for i, component := range components {
-		data[i] = componentModelToDomain(component)
-	}
-	result := &model.ComponentConnection{
-		Total: int(total),
-		Data:  data,
-	}
-	return result, nil
-}
-
 // GetComponent is the resolver for the getComponent field.
 func (r *queryResolver) GetComponent(ctx context.Context, id string) (*model.Component, error) {
 	component, err := r.componentRepo.Get(ctx, id)
@@ -128,40 +73,6 @@ func (r *queryResolver) GetComponent(ctx context.Context, id string) (*model.Com
 	}
 	result := componentModelToDomain(component)
 	return result, nil
-}
-
-// ListTeam is the resolver for the listTeam field.
-func (r *queryResolver) ListTeam(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.TeamConnection, error) {
-	var (
-		sortQuery []*domain.SortQuery
-	)
-	if sort != nil {
-		sortQuery = make([]*domain.SortQuery, len(sort))
-		for i, sortInput := range sort {
-			sortQuery[i] = &domain.SortQuery{
-				Field:     sortInput.Field,
-				Direction: domain.Direction(sortInput.Direction),
-			}
-		}
-	}
-	teams, total, err := r.teamRepo.List(ctx, &domain.ListTeamFilter{}, &domain.PageQuery{
-		Page: int32(page.Page),
-		Size: int32(page.Size),
-	}, sortQuery)
-	if err != nil {
-		return nil, err
-	}
-	data := make([]*model.Team, len(teams))
-	for i, team := range teams {
-		data[i] = &model.Team{
-			ID:   team.ID,
-			Name: team.Name,
-		}
-	}
-	return &model.TeamConnection{
-		Total: int(total),
-		Data:  data,
-	}, nil
 }
 
 // GetTeam is the resolver for the getTeam field.
@@ -173,40 +84,6 @@ func (r *queryResolver) GetTeam(ctx context.Context, id string) (*model.Team, er
 	return &model.Team{
 		ID:   team.ID,
 		Name: team.Name,
-	}, nil
-}
-
-// ListUser is the resolver for the listUser field.
-func (r *queryResolver) ListUser(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error) {
-	var (
-		sortQuery []*domain.SortQuery
-	)
-	if sort != nil {
-		sortQuery = make([]*domain.SortQuery, len(sort))
-		for i, sortInput := range sort {
-			sortQuery[i] = &domain.SortQuery{
-				Field:     sortInput.Field,
-				Direction: domain.Direction(sortInput.Direction),
-			}
-		}
-	}
-	users, total, err := r.userRepo.List(ctx, &domain.ListUserFilter{}, &domain.PageQuery{
-		Page: int32(page.Page),
-		Size: int32(page.Size),
-	}, sortQuery)
-	if err != nil {
-		return nil, err
-	}
-	data := make([]*model.User, len(users))
-	for i, user := range users {
-		data[i] = &model.User{
-			ID:   user.ID,
-			Name: user.Name,
-		}
-	}
-	return &model.UserConnection{
-		Total: int(total),
-		Data:  data,
 	}, nil
 }
 
@@ -238,7 +115,7 @@ func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.
 			}
 		}
 	}
-	members, total, err := r.teamRepo.ListMember(ctx, obj.ID, &domain.ListUserFilter{}, &domain.PageQuery{
+	members, total, err := r.teamRepo.QueryMember(ctx, obj.ID, &domain.UserFilter{}, &domain.PageQuery{
 		Page: int32(page.Page),
 		Size: int32(page.Size),
 	}, sortQuery)
@@ -273,12 +150,122 @@ type componentResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) QueryComponents(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
+	var (
+		listFilter domain.ComponentFilter
+		sortQuery  []*domain.SortQuery
+	)
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
+		}
+	}
+	if filter != nil {
+		listFilter = domain.ComponentFilter{}
+		if filter.Owner != nil {
+			listFilter.TeamID = *filter.Owner
+		}
+		if filter.Type != nil {
+			listFilter.Type = domain.ComponentType(*filter.Type)
+		}
+		if filter.Lifecycle != nil {
+			listFilter.Lifecycle = domain.Lifecycle(*filter.Lifecycle)
+		}
+		if filter.Keywords != nil {
+			listFilter.Keywords = *filter.Keywords
+		}
+		if filter.Tier != nil {
+			listFilter.Tier = domain.Tier(*filter.Tier)
+		}
+		if filter.Tags != nil {
+			listFilter.Tags = filter.Tags
+		}
+	}
+	components, total, err := r.componentRepo.Query(ctx, &listFilter, &domain.PageQuery{
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.Component, len(components))
+	for i, component := range components {
+		data[i] = componentModelToDomain(component)
+	}
+	result := &model.ComponentConnection{
+		Total: int(total),
+		Data:  data,
+	}
+	return result, nil
+}
+func (r *queryResolver) QueryTeams(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.TeamConnection, error) {
+	var (
+		sortQuery []*domain.SortQuery
+	)
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
+		}
+	}
+	teams, total, err := r.teamRepo.Query(ctx, &domain.TeamFilter{}, &domain.PageQuery{
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.Team, len(teams))
+	for i, team := range teams {
+		data[i] = &model.Team{
+			ID:   team.ID,
+			Name: team.Name,
+		}
+	}
+	return &model.TeamConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
+}
+func (r *queryResolver) QueryUsers(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error) {
+	var (
+		sortQuery []*domain.SortQuery
+	)
+	if sort != nil {
+		sortQuery = make([]*domain.SortQuery, len(sort))
+		for i, sortInput := range sort {
+			sortQuery[i] = &domain.SortQuery{
+				Field:     sortInput.Field,
+				Direction: domain.Direction(sortInput.Direction),
+			}
+		}
+	}
+	users, total, err := r.userRepo.Query(ctx, &domain.UserFilter{}, &domain.PageQuery{
+		Page: int32(page.Page),
+		Size: int32(page.Size),
+	}, sortQuery)
+	if err != nil {
+		return nil, err
+	}
+	data := make([]*model.User, len(users))
+	for i, user := range users {
+		data[i] = &model.User{
+			ID:   user.ID,
+			Name: user.Name,
+		}
+	}
+	return &model.UserConnection{
+		Total: int(total),
+		Data:  data,
+	}, nil
+}
 func componentModelToDomain(component *domain.Component) *model.Component {
 	result := &model.Component{
 		ID:          component.ID,

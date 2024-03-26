@@ -67,6 +67,7 @@ func (controller *Controller) WithRoutes(engine *gin.Engine, jwtMiddleware *jwt.
 	// component
 	component := api.Group("/component", jwtMiddleware.MiddlewareFunc())
 	component.POST("/create", controller.createComponent())
+	component.GET("/queryTags", controller.queryComponentTag())
 
 	// graphql
 	graphql := api.Group("/graphql")

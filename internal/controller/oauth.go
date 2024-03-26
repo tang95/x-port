@@ -47,7 +47,7 @@ func (controller *Controller) oauthValidate(jwtMiddleware *jwt.GinJWTMiddleware)
 
 func (controller *Controller) oauthProviders() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		providers, err := controller.auth.ListProviders(ctx)
+		providers, err := controller.auth.Providers(ctx)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"msg": err.Error(),

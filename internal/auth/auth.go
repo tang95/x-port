@@ -55,7 +55,7 @@ func (a *Auth) GetOAuthByName(ctx context.Context, name string) (OAuth, error) {
 	return oauth, nil
 }
 
-func (a *Auth) ListProviders(_ context.Context) ([]string, error) {
+func (a *Auth) Providers(_ context.Context) ([]string, error) {
 	providers := make([]string, 0)
 	for provider := range a.providers {
 		providers = append(providers, provider)

@@ -35,7 +35,7 @@ func (repo *teamRepo) Update(ctx context.Context, id string, team *domain.Team) 
 	panic("implement me")
 }
 
-func (repo *teamRepo) List(ctx context.Context, filter *domain.ListTeamFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Team, int32, error) {
+func (repo *teamRepo) Query(ctx context.Context, filter *domain.TeamFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Team, int32, error) {
 	var (
 		teams []*domain.Team
 		total int64
@@ -58,7 +58,7 @@ func (repo *teamRepo) List(ctx context.Context, filter *domain.ListTeamFilter, p
 	return teams, int32(total), tx.Error
 }
 
-func (repo *teamRepo) ListMember(ctx context.Context, id string, filter *domain.ListUserFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.User, int32, error) {
+func (repo *teamRepo) QueryMember(ctx context.Context, id string, filter *domain.UserFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.User, int32, error) {
 	var (
 		users []*domain.User
 		total int64

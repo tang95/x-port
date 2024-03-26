@@ -1,12 +1,12 @@
 import {request} from '@umijs/max';
 
-export async function listComponents(page: API.PageInput, filter: API.ComponentFilter, sort?: API.SortInput[]): Promise<API.PageResponse<API.Component>> {
+export async function queryComponents(page: API.PageInput, filter: API.ComponentFilter, sort?: API.SortInput[]): Promise<API.PageResponse<API.Component>> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',
         data: {
             query: `#graphql
             query MyQuery($page: PageInput!, $sort: [SortInput!], $filter: ComponentFilter) {
-                listComponent(page: $page, sort: $sort, filter: $filter) {
+                queryComponents(page: $page, sort: $sort, filter: $filter) {
                     data {
                         id
                         name
@@ -36,5 +36,11 @@ export async function listComponents(page: API.PageInput, filter: API.ComponentF
             }
         },
     })
-    return data.listComponent
+    return data.queryComponents
+}
+
+export async function queryTags(): Promise<string[]> {
+    return  await request<any>('/api/component/queryTags', {
+        method: 'GET',
+    })
 }

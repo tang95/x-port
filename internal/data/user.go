@@ -37,7 +37,7 @@ func newUserRepo(data *Data) service.UserRepo {
 	return &userRepo{data}
 }
 
-func (repo *userRepo) List(ctx context.Context, filter *domain.ListUserFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.User, int32, error) {
+func (repo *userRepo) Query(ctx context.Context, filter *domain.UserFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.User, int32, error) {
 	var (
 		users []*domain.User
 		total int64

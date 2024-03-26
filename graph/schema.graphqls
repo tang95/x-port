@@ -2,11 +2,11 @@ scalar Time
 scalar Map
 
 type Query {
-    listComponent(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
+    queryComponents(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
     getComponent(id: ID!): Component!
-    listTeam(page: PageInput!, sort: [SortInput!]): TeamConnection!
+    queryTeams(page: PageInput!, sort: [SortInput!]): TeamConnection!
     getTeam(id: ID!): Team!
-    listUser(page: PageInput!, sort: [SortInput!]): UserConnection!
+    queryUsers(page: PageInput!, sort: [SortInput!]): UserConnection!
     getUser(id: ID!): User!
 }
 
