@@ -15,7 +15,7 @@ const ComponentPage: React.FC = () => {
             sorter: true,
             dataIndex: 'name',
             render: (dom, record) => {
-                return <Link to={"/"}>
+                return <Link to={`/component/detail/${record.id}`}>
                     {dom}
                 </Link>
             },
