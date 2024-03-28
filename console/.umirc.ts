@@ -34,19 +34,8 @@ export default defineConfig({
             icon: 'appstore',
             routes: [
                 {redirect: "/component/index", path: "/component"},
-                {name: "组件", path: "/component/index", component: "./Component", hideInMenu: true},
-                {
-                    name: "详情",
-                    path: "/component/detail/:id",
-                    component: "./Component/Detail",
-                    flatMenu: true,
-                    routes: [
-                        {name: "概览", path: "/component/detail/:id/overview", component: "./Component/Detail/overview"},
-                        {name: "文档", path: "/component/detail/:id/document", component: "./Component/Detail/overview"},
-                        {name: "代码", path: "/component/detail/:id/code", component: "./Component/Detail/overview"},
-                        {name: "测试", path: "/component/detail/:id/test", component: "./Component/Detail/overview"},
-                    ]
-                },
+                {name: "组件", path: "/component/index", component: "./Component", hideInMenu: true, hideInBreadcrumb: true},
+                {name: "详情", path: "/component/detail/:id", component: "./Component/Detail", hideInMenu: true},
             ]
         },
         {
