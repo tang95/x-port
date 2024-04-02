@@ -50,6 +50,7 @@ export async function getComponent(id: string): Promise<API.Component> {
                     name
                     description
                     tier
+                    type
                     annotations
                     lifecycle
                     tags
@@ -62,6 +63,8 @@ export async function getComponent(id: string): Promise<API.Component> {
                         id
                         name
                     }
+                    updatedAt
+                    createdAt
                 }
             }
             `,

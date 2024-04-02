@@ -34,6 +34,7 @@ declare namespace API {
         name: string;
         description?: string;
         type: string;
+        tier: string;
         lifecycle: string;
         owner: Team;
         links?: Link[]
