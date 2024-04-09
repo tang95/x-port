@@ -1,42 +1,39 @@
-import {Avatar, Button, Descriptions, Space, Tooltip} from "antd";
-import {
-    AntDesignOutlined,
-    EditOutlined,
-    GitlabOutlined,
-    PlusOutlined,
-    UsergroupAddOutlined,
-    UserOutlined
-} from "@ant-design/icons";
+import {Flex, Space} from "antd";
+import {GitlabOutlined, UsergroupAddOutlined} from "@ant-design/icons";
 import React from "react";
 import {ProDescriptions} from "@ant-design/pro-components";
 import {ProDescriptionsItemProps} from "@ant-design/pro-descriptions";
+import {ComponentType, LifeCycle, Tier} from "@/constants/component";
 
 export type Props = {
-    data: API.Component
+    component: API.Component
 }
-export default ({data}: Props) => {
+export default ({component}: Props) => {
     const columns: ProDescriptionsItemProps[] = [
         {
             title: "类型",
             dataIndex: "type",
+            valueType: "select",
+            valueEnum: ComponentType
+        },
+        {
+            title: "生命周期",
+            dataIndex: "lifecycle",
+            valueType: "select",
+            valueEnum: LifeCycle
         },
         {
             title: "层级",
             dataIndex: "tier",
+            valueType: "select",
+            valueEnum: Tier
         },
         {
             title: "团队",
             dataIndex: "owner",
             render: (text, record) => {
                 return (
-                    <Avatar.Group maxCount={2} maxStyle={{color: '#f56a00', backgroundColor: '#fde3cf'}}>
-                        <Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=2"/>
-                        <Avatar style={{backgroundColor: '#f56a00'}}>K</Avatar>
-                        <Tooltip title="Ant User" placement="top">
-                            <Avatar style={{backgroundColor: '#87d068'}} icon={<UserOutlined/>}/>
-                        </Tooltip>
-                        <Avatar style={{backgroundColor: '#1677ff'}} icon={<AntDesignOutlined/>}/>
-                    </Avatar.Group>
+                    <a>基础设施</a>
                 )
             }
         },
@@ -45,11 +42,11 @@ export default ({data}: Props) => {
             dataIndex: "onCall",
             render: (text, record) => {
                 return (
-                    <Space direction={"vertical"}>
-                        <Button icon={<UsergroupAddOutlined/>} type={"link"}>问题反馈群</Button>
-                        <Button icon={<UsergroupAddOutlined/>} type={"link"}>需求群</Button>
-                        <Button icon={<UsergroupAddOutlined/>} type={"link"}>值班群</Button>
-                    </Space>
+                    <Flex vertical gap={5}>
+                        <a><Space><UsergroupAddOutlined/>问题反馈群</Space></a>
+                        <a><Space><UsergroupAddOutlined/>需求群</Space></a>
+                        <a><Space><UsergroupAddOutlined/>值班群</Space></a>
+                    </Flex>
                 )
             }
         },
@@ -58,16 +55,24 @@ export default ({data}: Props) => {
             dataIndex: "repository",
             render: (text, record) => {
                 return (
-                    <Space direction={"vertical"}>
-                        <Button icon={<GitlabOutlined/>} type={"link"}>demo-service</Button>
-                        <Button icon={<GitlabOutlined/>} type={"link"}>demo-library</Button>
-                        <Button icon={<GitlabOutlined/>} type={"link"}>demo-console</Button>
-                    </Space>
+                    <Flex vertical gap={5}>
+                        <a><Space><GitlabOutlined/>demo-service</Space></a>
+                        <a><Space><GitlabOutlined/>demo-library</Space></a>
+                        <a><Space><GitlabOutlined/>demo-console</Space></a>
+                    </Flex>
                 )
+            }
+        },
+        {
+            title: "注解",
+            dataIndex: "annotations",
+            valueType: "jsonCode",
+            renderText: (text, record) => {
+                return JSON.stringify(text)
             }
         }
     ]
     return (
-        <ProDescriptions columns={columns} dataSource={data} colon={false}/>
+        <ProDescriptions columns={columns} dataSource={component} colon={false}/>
     )
 }

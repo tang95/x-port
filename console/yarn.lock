@@ -8849,6 +8849,11 @@ vary@^1:
   resolved "https://registry.npmmirror.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
+vis-timeline@^7.7.3:
+  version "7.7.3"
+  resolved "https://registry.npmmirror.com/vis-timeline/-/vis-timeline-7.7.3.tgz#79434eb3029169bff8de1b5012aa5c29786d6594"
+  integrity sha512-hGMzTttdOFWaw1PPlJuCXU2/4UjnsIxT684Thg9fV6YU1JuKZJs3s3BrJgZ4hO3gu5i1hsMe1YIi96o+eNT0jg==
+
 vite@4.3.1:
   version "4.3.1"
   resolved "https://registry.npmmirror.com/vite/-/vite-4.3.1.tgz#9badb1377f995632cdcf05f32103414db6fbb95a"

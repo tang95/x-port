@@ -19,7 +19,12 @@ const ComponentPage: React.FC = () => {
                     {dom}
                 </Link>
             },
-            width: "30%"
+            width: "20%"
+        },
+        {
+            title: '描述',
+            dataIndex: 'description',
+            ellipsis: true,
         },
         {
             title: '层级',
@@ -56,11 +61,7 @@ const ComponentPage: React.FC = () => {
                 </Link>
             },
             width: 200
-        },
-        {
-            title: '描述',
-            dataIndex: 'description',
-        },
+        }
     ]
 
     const [filter, setFilter] = React.useState<API.ComponentFilter>({})
