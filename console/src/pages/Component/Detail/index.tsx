@@ -9,6 +9,7 @@ import {EditOutlined} from "@ant-design/icons";
 import Basic from "./components/Basic";
 import Tools from "@/pages/Component/Detail/components/Tools";
 import Activity from "@/pages/Component/Detail/components/Activity";
+import Scorecard from "@/pages/Component/Detail/components/Scorecard";
 
 const ComponentDetailPage: React.FC = () => {
     const params = useParams();
@@ -58,6 +59,7 @@ const ComponentDetailPage: React.FC = () => {
                 </ProCard>
                 <ProCard colSpan={24} title={"记分卡"}
                          extra={<Button type={"link"} size={"small"}>查看更多</Button>}>
+                    {data && <Scorecard component={data}/>}
                 </ProCard>
                 <ProCard colSpan={24} title={"最近变更"}
                          extra={<Button type={"link"} size={"small"}>查看更多</Button>}>

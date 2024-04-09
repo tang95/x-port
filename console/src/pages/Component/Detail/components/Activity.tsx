@@ -17,8 +17,8 @@ export default (props: Props) => {
         {id: 4, start: "2024-04-08T15:30:00", type: "point", group: 3},
         {id: 5, start: "2024-04-08T16:40:00", type: "point", group: 2},
         {id: 6, start: "2024-04-08T17:50:00", type: "point", group: 4},
-        {id: 7, start: "2024-04-08T13:30:00", end: "2024-04-08T14:30:00", type: "range", group: 2},
-        {id: 8, start: "2024-04-08T17:50:00", type: "point", group: 4},
+        {id: 7, start: "2024-04-08T13:40:00", type: "point", group: 2},
+        {id: 8, start: "2024-04-08T17:20:00", type: "point", group: 4},
     ];
     const groups: DataGroupCollectionType = [
         {id : 1, content: "demo-service", nestedGroups: [2, 3, 4]},
@@ -40,6 +40,9 @@ export default (props: Props) => {
         zoomable: false,
         horizontalScroll: true,
         showCurrentTime: true,
+        cluster: {
+            showStipes: true,
+        },
         max: moment().add(4, 'hour').toDate(),
         format: {
             minorLabels: {
