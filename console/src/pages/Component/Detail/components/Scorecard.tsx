@@ -14,6 +14,7 @@ export default (props: Props) => {
         const color = props.value > 90 ? green[6] : props.value > 70 ? blue[6] : props.value > 50 ? yellow[6] : red[6];
         return (
             <StatisticCard
+                style={{width: "310px"}}
                 bordered
                 statistic={{
                     title: props.title,
@@ -27,6 +28,7 @@ export default (props: Props) => {
                 chart={
                     <Progress
                         type="circle"
+                        format={(percent) => percent}
                         size={70}
                         strokeColor={color}
                         strokeLinecap={"butt"}
@@ -40,7 +42,7 @@ export default (props: Props) => {
     }
 
     return (
-        <Flex gap={"middle"}>
+        <Flex gap={"middle"} wrap={"wrap"}>
             <Scorecard title={"信息完整度"} description={"组件基本信息完整度"} value={100}/>
             <Scorecard title={"DevOps 健康度"} description={"CI / CD 持续集成与交付健康度"} value={85}/>
             <Scorecard title={"质量健康度"} description={"测试覆盖率、代码质量等"} value={63}/>
