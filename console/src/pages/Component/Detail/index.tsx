@@ -40,11 +40,11 @@ const ComponentDetailPage: React.FC = () => {
         <PageContainer title={data?.name} tags={tags}
                        header={{style: {backgroundColor: "white"}}}
                        content={<Typography.Text type={"secondary"}>{data?.description}</Typography.Text>}
-                       loading={loading} extra={extra} fixedHeader
+                       loading={loading} extra={extra}
                        tabList={[
                            {key: "overview", tab: "概要"},
                            {key: "scorecard", tab: "记分卡"},
-                           {key: "dependencies", tab: "依赖关系"},
+                           {key: "dependencies", tab: "依赖组件"},
                            {key: "activity", tab: "最近变更"},
                        ]}
         >

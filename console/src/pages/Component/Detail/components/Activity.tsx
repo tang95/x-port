@@ -11,26 +11,33 @@ export default (props: Props) => {
     const timelineRef = useRef<Timeline | null>(null);
 
     const items: DataItemCollectionType = [
-        {id: 1, start: "2024-04-08T12:20:00", type: "point", group: 2},
-        {id: 2, start: "2024-04-08T13:30:00", type: "point", group: 3},
-        {id: 3, start: "2024-04-08T14:10:00", type: "point", group: 2},
-        {id: 4, start: "2024-04-08T15:30:00", type: "point", group: 3},
-        {id: 5, start: "2024-04-08T16:40:00", type: "point", group: 2},
-        {id: 6, start: "2024-04-08T17:50:00", type: "point", group: 4},
-        {id: 7, start: "2024-04-08T13:40:00", type: "point", group: 2},
-        {id: 8, start: "2024-04-08T17:20:00", type: "point", group: 4},
+        {
+            id: 1, start: "2024-04-08T12:20:00", group: 2, className: "error", title: `
+            <div>
+             <div>2024-04-08 12:20:00</div>
+             <div>Prod 环境部署</div>
+             <div><a>点击查看</a></div>
+           </div>`
+        },
+        {id: 2, start: "2024-04-08T13:30:00", group: 3},
+        {id: 3, start: "2024-04-08T14:10:00", group: 2, className: "error"},
+        {id: 4, start: "2024-04-08T15:30:00", group: 3, className: "warn"},
+        {id: 5, start: "2024-04-08T16:40:00", group: 2},
+        {id: 6, start: "2024-04-08T17:50:00", group: 4, className: "warn"},
+        {id: 7, start: "2024-04-08T13:40:00", group: 2},
+        {id: 8, start: "2024-04-08T17:20:00", group: 4},
     ];
     const groups: DataGroupCollectionType = [
-        {id : 1, content: "demo-service", nestedGroups: [2, 3, 4]},
-        {id : 2, content: "部署"},
-        {id : 3, content: "事件"},
-        {id : 4, content: "告警"},
-        {id : 10, content: "依赖关系", nestedGroups: [11, 12]},
-        {id : 11, content: "demo-library", nestedGroups: [22, 23, 24], showNested: false},
-        {id : 12, content: "demo-database"},
-        {id : 22, content: "部署"},
-        {id : 23, content: "事件"},
-        {id : 24, content: "告警"},
+        {id: 1, content: "demo-service", nestedGroups: [2, 3, 4]},
+        {id: 2, content: "部署"},
+        {id: 3, content: "事件"},
+        {id: 4, content: "告警"},
+        {id: 10, content: "依赖组件", nestedGroups: [11, 12]},
+        {id: 11, content: "demo-library", nestedGroups: [22, 23, 24], showNested: false},
+        {id: 12, content: "demo-database"},
+        {id: 22, content: "部署"},
+        {id: 23, content: "事件"},
+        {id: 24, content: "告警"},
     ]
 
     const options: TimelineOptions = {
