@@ -67,6 +67,9 @@ export default ({component}: Props) => {
             title: "注解",
             dataIndex: "annotations",
             valueType: "jsonCode",
+            fieldProps: {
+                style: {maxHeight: 75}
+            },
             renderText: (text, record) => {
                 return JSON.stringify(text)
             }
