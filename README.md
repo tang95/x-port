@@ -46,6 +46,7 @@ docker run --rm \
 * 自助服务：使用软件模板创建服务，自动配置基础设施提升效率。
 
 ![主页](docs/images/home.png)
+![组件详情](docs/images/detail.png)
 
 ## 贡献
 
