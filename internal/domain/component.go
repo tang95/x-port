@@ -75,7 +75,7 @@ func (ComponentComponent) TableName() string {
 	return "component_component"
 }
 
-type ListComponentFilter struct {
+type ComponentFilter struct {
 	ComponentIDs []string      `json:"componentIDs,omitempty"`
 	Keywords     string        `json:"keywords,omitempty"`
 	Type         ComponentType `json:"type,omitempty"`

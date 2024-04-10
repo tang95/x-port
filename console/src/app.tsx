@@ -21,7 +21,8 @@ export async function getInitialState(): Promise<API.AuthUser | null> {
 export const layout: RunTimeLayoutConfig = ({initialState}) => {
     return {
         logo: '/favicon.png',
-        layout: "top",
+        layout: "mix",
+        splitMenus: true,
         headerTitleRender: (logo, title) => {
             return (
                 <a style={{paddingRight: '10px'}}>

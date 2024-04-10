@@ -34,6 +34,7 @@ declare namespace API {
         name: string;
         description?: string;
         type: string;
+        tier: string;
         lifecycle: string;
         owner: Team;
         links?: Link[]
@@ -60,11 +61,10 @@ declare namespace API {
     type PageInput = {
         page: number;
         size: number;
-        order?: OrderInput;
     }
 
-    type OrderInput = {
-        fields: string[]
+    type SortInput = {
+        field: string
         direction: "ASC" | "DESC"
     }
 

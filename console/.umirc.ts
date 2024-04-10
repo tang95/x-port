@@ -31,8 +31,12 @@ export default defineConfig({
         {
             name: '组件',
             path: '/component',
-            component: './Component',
-            icon: 'appstore'
+            icon: 'appstore',
+            routes: [
+                {redirect: "/component/index", path: "/component"},
+                {name: "组件", path: "/component/index", component: "./Component", hideInMenu: true, hideInBreadcrumb: true},
+                {name: "详情", path: "/component/detail/:id", component: "./Component/Detail", hideInMenu: true},
+            ]
         },
         {
             name: '团队',
@@ -48,6 +52,7 @@ export default defineConfig({
                 {name: "Github 认证", path: "/login/github", component: "./Login/Github"}
             ]
         },
+        {path: '/*', redirect: "/"}
     ],
     npmClient: 'yarn',
 });

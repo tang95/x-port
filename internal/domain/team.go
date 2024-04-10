@@ -20,5 +20,5 @@ func (TeamUser) TableName() string {
 	return "team_user"
 }
 
-type ListTeamFilter struct {
+type TeamFilter struct {
 }

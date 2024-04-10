@@ -1,12 +1,12 @@
 import {request} from '@umijs/max';
 
-export async function listComponents(page: API.PageInput, filter: API.ComponentFilter): Promise<API.PageResponse<API.Component>> {
+export async function queryComponents(page: API.PageInput, filter: API.ComponentFilter, sort?: API.SortInput[]): Promise<API.PageResponse<API.Component>> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',
         data: {
             query: `#graphql
-            query MyQuery($page: PageInput!, $filter: ComponentFilter) {
-                listComponent(page: $page, filter: $filter) {
+            query MyQuery($page: PageInput!, $sort: [SortInput!], $filter: ComponentFilter) {
+                queryComponents(page: $page, sort: $sort, filter: $filter) {
                     data {
                         id
                         name
@@ -31,9 +31,53 @@ export async function listComponents(page: API.PageInput, filter: API.ComponentF
             `,
             variables: {
                 page: page,
-                filter: filter
+                filter: filter,
+                sort: sort
             }
         },
     })
-    return data.listComponent
+    return data.queryComponents
+}
+
+export async function getComponent(id: string): Promise<API.Component> {
+    const {data} = await request<any>('/api/graphql/query', {
+        method: 'POST',
+        data: {
+            query: `#graphql
+            query MyQuery($id: ID!) {
+                getComponent(id: $id) {
+                    id
+                    name
+                    description
+                    tier
+                    type
+                    annotations
+                    lifecycle
+                    tags
+                    links {
+                        title
+                        type
+                        url
+                    }
+                    owner {
+                        id
+                        name
+                    }
+                    updatedAt
+                    createdAt
+                }
+            }
+            `,
+            variables: {
+                id: id,
+            }
+        },
+    })
+    return data.getComponent
+}
+
+export async function queryTags(): Promise<string[]> {
+    return await request<any>('/api/component/queryTags', {
+        method: 'GET',
+    })
 }
