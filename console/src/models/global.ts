@@ -1,13 +1,9 @@
 // 全局共享数据示例
-import { DEFAULT_NAME } from '@/constants';
-import { useState } from 'react';
+import {useModel} from "@umijs/max";
 
-const useUser = () => {
-  const [name, setName] = useState<string>(DEFAULT_NAME);
-  return {
-    name,
-    setName,
-  };
+const useUser = (): [API.AuthUser | null, boolean] => {
+    const {initialState, loading} = useModel('@@initialState');
+    return [initialState as API.AuthUser | null, loading];
 };
 
 export default useUser;

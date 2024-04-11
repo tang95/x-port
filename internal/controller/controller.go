@@ -70,7 +70,7 @@ func (controller *Controller) WithRoutes(engine *gin.Engine, jwtMiddleware *jwt.
 	component.GET("/queryTags", controller.queryComponentTag())
 
 	// graphql
-	graphql := api.Group("/graphql")
+	graphql := api.Group("/graphql", jwtMiddleware.MiddlewareFunc())
 	graphql.POST("/query", controller.graphqlHandler())
 	graphql.GET("/", controller.playgroundHandler())
 

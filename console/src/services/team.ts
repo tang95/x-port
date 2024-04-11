@@ -1,12 +1,12 @@
 import {request} from '@umijs/max';
 
-export async function queryTeams(page: API.PageInput): Promise<API.PageResponse<API.Team>> {
+export async function queryTeams(page: API.PageInput, sort?: API.SortInput[]): Promise<API.PageResponse<API.Team>> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',
         data: {
             query: `#graphql
-            query MyQuery($page: PageInput!) {
-                queryTeams(page: $page) {
+            query MyQuery($page: PageInput!, $sort: [SortInput!],) {
+                queryTeams(page: $page, sort: $sort) {
                     data {
                         id
                         name
@@ -17,6 +17,7 @@ export async function queryTeams(page: API.PageInput): Promise<API.PageResponse<
             `,
             variables: {
                 page: page,
+                sort: sort
             }
         },
     })
