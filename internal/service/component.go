@@ -39,3 +39,7 @@ func (service *Service) CreateComponent(ctx context.Context) (string, error) {
 	}
 	return id, nil
 }
+
+func (service *Service) UpdateComponent(ctx context.Context, id string, data map[string]interface{}) error {
+	return nil
+}
