@@ -1,8 +1,12 @@
 package request
 
+import (
+	"go.uber.org/atomic"
+)
+
 type UpdateComponentRequest struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Tags        []string `json:"tags"`
+	ID          string        `json:"id"`
+	Name        atomic.Bool   `json:"name"`
+	Description atomic.String `json:"description"`
+	Tags        []string      `json:"tags"`
 }

@@ -3,18 +3,21 @@ import {ModalForm, PageContainer, ProFormSelect, ProFormText, ProFormTextArea} f
 import useRequest from "@ahooksjs/use-request";
 import {ComponentService} from "@/services";
 import {useParams, useSearchParams} from "@umijs/max";
-import {Button, Space, Tag, Typography} from "antd";
+import {Button, Tag, Typography} from "antd";
 import Overview from "./components/Overview";
 import Scorecard from "./components/Scorecard";
 import Dependencies from "./components/Dependencies";
 import Activity from "./components/Activity";
 
-const EditMainInfo = (props: API.Component) => {
+const EditMainInfo = (props: { component: API.Component, callback: () => void }) => {
     return (
         <ModalForm
-            width={500} title={"主要信息"}
-            trigger={<Button>编辑</Button>}
-            initialValues={props}
+            width={500} title={"主要信息"} trigger={<Button>编辑</Button>} initialValues={props.component}
+            onFinish={async (values) => {
+                await ComponentService.updateComponent({id: props.component.id, ...values})
+                props.callback()
+                return true
+            }}
         >
             <ProFormText name={"name"} label={"名称"}/>
             <ProFormTextArea name={"description"} label={"描述"}/>
@@ -27,7 +30,7 @@ export default () => {
     const params = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const [tabActive, setTabActive] = React.useState("overview")
-    const {data, loading, run} = useRequest((id: string) => ComponentService.getComponent(id), {
+    const {data, loading, run, refresh} = useRequest((id: string) => ComponentService.getComponent(id), {
         manual: true
     })
 
@@ -49,19 +52,12 @@ export default () => {
 
     const tags = data?.tags?.map((tag) => <Tag color={"blue"}>{tag}</Tag>)
 
-    const extra = (
-        <Space>
-            <EditMainInfo {...data}/>
-            <Button type={"link"} danger>下线</Button>
-        </Space>
-    )
-
     return (
         <PageContainer
             title={data?.name} tags={tags}
             header={{style: {backgroundColor: "white"}}}
             content={<Typography.Text type={"secondary"}>{data?.description}</Typography.Text>}
-            loading={loading} extra={extra} tabActiveKey={tabActive}
+            loading={loading} extra={<EditMainInfo component={data} callback={refresh}/>} tabActiveKey={tabActive}
             onTabChange={(value) => {
                 setTabActive(value)
                 setSearchParams({...searchParams, tab: value})
@@ -73,7 +69,7 @@ export default () => {
                 {key: "activity", tab: "最近变更"},
             ]}
         >
-            {tabActive === "overview" && <Overview component={data}/>}
+            {tabActive === "overview" && <Overview component={data} callback={refresh}/>}
             {tabActive === "scorecard" && <Scorecard component={data}/>}
             {tabActive === "dependencies" && <Dependencies component={data}/>}
             {tabActive === "activity" && <Activity component={data}/>}

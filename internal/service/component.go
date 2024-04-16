@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"github.com/tang95/x-port/internal/domain"
+	"slices"
 )
 
 type ComponentRepo interface {
 	Get(ctx context.Context, id string) (*domain.Component, error)
 	Create(ctx context.Context, component *domain.Component) (string, error)
 	Update(ctx context.Context, id string, component *domain.Component) error
+	Patch(ctx context.Context, id string, data map[string]interface{}) error
 	Query(ctx context.Context, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
 	QueryDependency(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
 	QueryDependents(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
@@ -41,5 +43,12 @@ func (service *Service) CreateComponent(ctx context.Context) (string, error) {
 }
 
 func (service *Service) UpdateComponent(ctx context.Context, id string, data map[string]interface{}) error {
-	return nil
+	fields := []string{"name", "description", "lifecycle", "type", "tier", "owner_id", "tags", "annotations", "links"}
+	// 删除不在列表内的字段
+	for k := range data {
+		if !slices.Contains(fields, k) {
+			delete(data, k)
+		}
+	}
+	return service.componentRepo.Patch(ctx, id, data)
 }

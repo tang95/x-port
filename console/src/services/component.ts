@@ -1,5 +1,13 @@
 import {request} from '@umijs/max';
 
+export async function updateComponent(data: API.UpdateComponentRequest) {
+    return await request<any>('/api/component/update', {
+        method: 'PATCH',
+        data
+    })
+}
+
+
 export async function queryComponents(page: API.PageInput, filter: API.ComponentFilter, sort?: API.SortInput[]): Promise<API.PageResponse<API.Component>> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',

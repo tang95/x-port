@@ -44,6 +44,19 @@ declare namespace API {
         updatedAt: string
     }
 
+    type UpdateComponentRequest = {
+        id: string;
+        name?: string;
+        description?: string;
+        type?: string;
+        tier?: string;
+        lifecycle?: string;
+        owner_id?: string;
+        links?: Link[]
+        tags?: string[]
+        annotations?: Map
+    }
+
     type PageResponse<T> = {
         total: number;
         data: T[];

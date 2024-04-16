@@ -142,7 +142,7 @@ const ScoreCardList = (props: API.Component) => {
 
     return (
         <Flex gap={"middle"} wrap={"wrap"}>
-            <Scorecard title={"信息完整度"} description={"组件基本信息完整度"} value={100}/>
+            <Scorecard title={"信息合规性"} description={"组件基本信息完整度"} value={100}/>
             <Scorecard title={"DevOps 健康度"} description={"CI / CD 持续集成与交付健康度"} value={85}/>
             <Scorecard title={"质量健康度"} description={"测试覆盖率、代码质量等"} value={63}/>
             <Scorecard title={"成本健康度"} description={"成本中心服务的资源利用率"} value={46}/>
@@ -288,7 +288,7 @@ const Tools = (props: API.Component) => {
     )
 }
 
-const EditBasicInfo = (props: API.Component) => {
+const EditBasicInfo = (props: { component: API.Component, callback: () => void }) => {
     const [visible, setVisible] = React.useState(false);
     return (
         <>
@@ -305,9 +305,13 @@ const EditBasicInfo = (props: API.Component) => {
                         </Modal>
                     );
                 }}
+                onFinish={async (values) => {
+                    return props.callback();
+                }}
             >
                 <StepsForm.StepForm title={"基础"} grid>
-                    <ProFormSelect name={"team"} label={"团队"} colProps={{span: 24}}/>
+                    <ProFormSelect name={"team"} label={"团队"} colProps={{span: 16}}/>
+                    <ProFormSelect name={"lifecycle"} label={"生命周期"} valueEnum={LifeCycle} colProps={{span: 8}}/>
                     <ProFormSelect name={"type"} label={"类型"} valueEnum={ComponentType} colProps={{span: 12}}/>
                     <ProFormSelect name={"tier"} label={"层级"} valueEnum={Tier} colProps={{span: 12}}/>
                     <ProFormTextArea name={"annotations"} label={"注解"} colProps={{span: 24}}/>
@@ -358,6 +362,7 @@ const EditBasicInfo = (props: API.Component) => {
 
 export type Props = {
     component: API.Component;
+    callback: () => void;
 }
 
 export default (props: Props) => {
@@ -431,7 +436,8 @@ export default (props: Props) => {
 
     return (
         <ProCard ghost gutter={[16, 16]} wrap>
-            <ProCard colSpan={12} title={"基础信息"} extra={<EditBasicInfo  {...props.component}/>}>
+            <ProCard colSpan={12} title={"基础信息"}
+                     extra={<EditBasicInfo component={props.component} callback={props.callback}/>}>
                 <ProDescriptions columns={columns} dataSource={props} colon={false}/>
             </ProCard>
             <ProCard colSpan={12} title={"工具"}

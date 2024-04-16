@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/samber/lo"
 	"github.com/tang95/x-port/internal/domain"
 	"github.com/tang95/x-port/internal/service"
@@ -71,6 +72,33 @@ func (repo *componentRepo) Query(ctx context.Context, filter *domain.ComponentFi
 
 func (repo *componentRepo) Update(ctx context.Context, id string, component *domain.Component) error {
 	return repo.DB(ctx).Model(&domain.Component{}).Where("id = ?", id).Updates(component).Error
+}
+
+func (repo *componentRepo) Patch(ctx context.Context, id string, data map[string]interface{}) error {
+	// Json 需要转换后才可以更新
+	var (
+		err   error
+		bytes []byte
+	)
+	if annotations, ok := data["annotations"]; ok {
+		bytes, err = json.Marshal(annotations)
+		data["annotations"] = string(bytes)
+	}
+	if tags, ok := data["tags"]; ok && err == nil {
+		bytes, err = json.Marshal(tags)
+		data["tags"] = string(bytes)
+	}
+	if links, ok := data["links"]; ok && err == nil {
+		bytes, err = json.Marshal(links)
+		data["links"] = string(bytes)
+	}
+	if err != nil {
+		return err
+	}
+	return repo.DB(ctx).
+		Model(&domain.Component{}).
+		Where("id = ?", id).
+		Updates(data).Error
 }
 
 func (repo *componentRepo) QueryDependency(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error) {
