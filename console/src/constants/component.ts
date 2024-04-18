@@ -43,3 +43,30 @@ export const ComponentType = {
         text: "网站"
     },
 }
+
+export const LinkType = {
+    "dashboard": {
+        text: "Dashboard",
+        value: "dashboard"
+    },
+    "repository": {
+        text: "仓库",
+        value: "repository"
+    },
+    "home": {
+        text: "网站",
+        value: "home"
+    },
+    "doc": {
+        text: "文档",
+        value: "doc"
+    },
+    "chat": {
+        text: "聊天",
+        value: "chat"
+    },
+    "other": {
+        text: "其他",
+        value: "other"
+    }
+}

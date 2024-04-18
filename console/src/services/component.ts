@@ -1,5 +1,21 @@
 import {request} from '@umijs/max';
 
+export async function removeLink(data: API.RemoveComponentLinkRequest) {
+    return await request<any>('/api/component/links/remove', {
+        method: 'POST',
+        data
+    })
+}
+
+
+export async function addLink(data: API.AddComponentLinkRequest) {
+    return await request<any>('/api/component/links/add', {
+        method: 'POST',
+        data
+    })
+}
+
+
 export async function updateComponent(data: API.UpdateComponentRequest) {
     return await request<any>('/api/component/update', {
         method: 'PATCH',

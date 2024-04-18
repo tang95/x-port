@@ -52,3 +52,54 @@ func (service *Service) UpdateComponent(ctx context.Context, id string, data map
 	}
 	return service.componentRepo.Patch(ctx, id, data)
 }
+
+func (service *Service) AddComponentAnnotation(ctx context.Context, componentID string, key string, value string) error {
+	component, err := service.componentRepo.Get(ctx, componentID)
+	if err != nil {
+		return err
+	}
+	component.Annotations[key] = value
+	return service.componentRepo.Update(ctx, componentID, component)
+}
+
+func (service *Service) RemoveComponentAnnotation(ctx context.Context, componentID string, key string) error {
+	component, err := service.componentRepo.Get(ctx, componentID)
+	if err != nil {
+		return err
+	}
+	delete(component.Annotations, key)
+	return service.componentRepo.Update(ctx, componentID, component)
+}
+
+func (service *Service) AddComponentLink(ctx context.Context, componentID string, title string, linkType string, url string) error {
+	component, err := service.componentRepo.Get(ctx, componentID)
+	if err != nil {
+		return err
+	}
+	//	判断相同的链接是否存在
+	for _, link := range component.Links {
+		if link.Title == title && link.Type == domain.LinkType(linkType) && link.URL == url {
+			return nil
+		}
+	}
+	component.Links = append(component.Links, domain.Link{
+		Title: title,
+		Type:  domain.LinkType(linkType),
+		URL:   url,
+	})
+	return service.componentRepo.Update(ctx, componentID, component)
+}
+
+func (service *Service) RemoveComponentLink(ctx context.Context, componentID string, title string, linkType string, url string) error {
+	component, err := service.componentRepo.Get(ctx, componentID)
+	if err != nil {
+		return err
+	}
+	for i, link := range component.Links {
+		if link.Title == title && link.Type == domain.LinkType(linkType) && link.URL == url {
+			component.Links = append(component.Links[:i], component.Links[i+1:]...)
+			return service.componentRepo.Update(ctx, componentID, component)
+		}
+	}
+	return nil
+}

@@ -34,12 +34,12 @@ const (
 type LinkType string
 
 const (
-	// Doc 文档
-	Doc LinkType = "doc"
-	// Home 网站
-	Home LinkType = "home"
-	// Repository 仓库
+	Doc        LinkType = "doc"
+	Home       LinkType = "home"
 	Repository LinkType = "repository"
+	Chat       LinkType = "chat"
+	Dashboard  LinkType = "dashboard"
+	Other      LinkType = "other"
 )
 
 type Link struct {

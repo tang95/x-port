@@ -57,6 +57,20 @@ declare namespace API {
         annotations?: Map
     }
 
+    type AddComponentLinkRequest = {
+        component_id: string;
+        title: string;
+        type: string;
+        url: string;
+    }
+
+    type RemoveComponentLinkRequest = {
+        component_id: string;
+        title: string;
+        type: string;
+        url: string;
+    }
+
     type PageResponse<T> = {
         total: number;
         data: T[];

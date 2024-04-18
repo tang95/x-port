@@ -1,12 +1,15 @@
 import {useSearchParams} from "@@/exports";
 import ProCard, {StatisticCard} from "@ant-design/pro-card";
-import {Button, Divider, Flex, Modal, Progress, Space, Typography} from "antd";
+import {Button, Divider, Flex, FormInstance, Modal, Popconfirm, Progress, Space, Typography} from "antd";
 import {
-    EditableProTable,
+    ModalForm,
+    ProColumnType,
     ProDescriptions,
     ProForm,
     ProFormSelect,
+    ProFormText,
     ProFormTextArea,
+    ProTable,
     StepsForm
 } from "@ant-design/pro-components";
 import React, {useEffect, useRef} from "react";
@@ -16,14 +19,16 @@ import {
     EditOutlined,
     GitlabOutlined,
     LinkOutlined,
+    PlusOutlined,
     UsergroupAddOutlined
 } from "@ant-design/icons";
-import {ComponentType, LifeCycle, Tier} from "@/constants/component";
+import {ComponentType, LifeCycle, LinkType, Tier} from "@/constants/component";
 import {ProDescriptionsItemProps} from "@ant-design/pro-descriptions";
 import {blue, green, red, yellow} from "@ant-design/colors";
 import {Timeline} from "vis-timeline/standalone";
 import {DataGroupCollectionType, DataItemCollectionType, TimelineOptions} from "vis-timeline";
 import moment from "moment/moment";
+import {ComponentService, TeamService} from "@/services";
 
 const {Statistic} = StatisticCard
 
@@ -150,8 +155,75 @@ const ScoreCardList = (props: API.Component) => {
     )
 }
 
-const EditTools = (props: API.Component) => {
+const EditTools = (props: { component: API.Component, callback: () => void }) => {
     const [visible, setVisible] = React.useState(false);
+    const [dashboards, setDashboards] = React.useState<API.Link[]>([]);
+    const [docs, setDocs] = React.useState<API.Link[]>([]);
+    const [others, setOthers] = React.useState<API.Link[]>([]);
+
+    const deleteLocalLink = (link: API.Link) => {
+        setDashboards(dashboards.filter(item => item !== link))
+        setDocs(docs.filter(item => item !== link))
+        setOthers(others.filter(item => item !== link))
+    }
+
+    useEffect(() => {
+        setDashboards(props.component.links?.filter(link => link.type === LinkType.dashboard.value) || [])
+        setDocs(props.component.links?.filter(link => link.type === LinkType.doc.value) || [])
+        setOthers(props.component.links?.filter(link => link.type === LinkType.other.value) || [])
+    }, []);
+
+    const addLink = (link: API.Link) => {
+        switch (link.type) {
+            case LinkType.dashboard.value:
+                setDashboards([...dashboards, link])
+                break
+            case LinkType.doc.value:
+                setDocs([...docs, link])
+                break
+            case LinkType.other.value:
+                setOthers([...others, link])
+                break
+        }
+        return true;
+    }
+
+    const columns: ProColumnType<API.Link>[] = [
+        {
+            title: "名称",
+            dataIndex: "title",
+            width: "200px",
+            ellipsis: true,
+        },
+        {
+            title: "URL",
+            dataIndex: "url",
+            width: "200px",
+            ellipsis: true,
+        },
+        {
+            title: "操作",
+            dataIndex: "option",
+            width: "50px",
+            render: (_, entity) => {
+                return <Popconfirm
+                    title="确认删除吗?"
+                    onConfirm={() => {
+                        ComponentService.removeLink({
+                            component_id: props.component.id,
+                            title: entity.title,
+                            url: entity.url,
+                            type: entity.type,
+                        }).then(() => deleteLocalLink(entity))
+                    }}
+                    okText="是"
+                    cancelText="否"
+                >
+                    <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
+                </Popconfirm>
+            }
+        }
+    ]
     return (
         <>
             <Button type={"text"} size={"small"} icon={<EditOutlined/>} onClick={() => setVisible(true)}/>
@@ -167,80 +239,59 @@ const EditTools = (props: API.Component) => {
                         </Modal>
                     );
                 }}
+                onFinish={async (values) => {
+                    return props.callback();
+                }}
             >
                 <StepsForm.StepForm title={"Dashboard"}>
                     <ProForm.Item name="dashboard">
-                        <EditableProTable value={[{
-                            id: 1,
-                            name: "GitHub",
-                            url: "https://github.com/",
-                        }, {
-                            id: 2,
-                            name: "GitLab",
-                            url: "https://gitlab.com/",
-                        }, {
-                            id: 3,
-                            name: "Gitee",
-                            url: "https://gitee.com/",
-                        }]} columns={[
-                            {title: "名称", dataIndex: "name"},
-                            {title: "URL", dataIndex: "url", width: "200px"},
-                            {
-                                title: "操作", dataIndex: "option", width: "50px", render: () => {
-                                    return <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
-                                }
-                            },
-                        ]} rowKey="id" toolBarRender={false}/>
+                        <ProTable
+                            dataSource={dashboards} columns={columns} toolBarRender={false} search={false}
+                            options={false} pagination={false} tableLayout={"fixed"}
+                            tableViewRender={(_, dom) => {
+                                return (
+                                    <>
+                                        {dom}
+                                        <AddLink type={LinkType.dashboard.value} component={props.component}
+                                                 callback={addLink}/>
+                                    </>
+                                )
+                            }}
+                        />
                     </ProForm.Item>
                 </StepsForm.StepForm>
                 <StepsForm.StepForm title={"Document"}>
                     <ProForm.Item name="document">
-                        <EditableProTable value={[{
-                            id: 1,
-                            name: "GitHub",
-                            url: "https://github.com/",
-                        }, {
-                            id: 2,
-                            name: "GitLab",
-                            url: "https://gitlab.com/",
-                        }, {
-                            id: 3,
-                            name: "Gitee",
-                            url: "https://gitee.com/",
-                        }]} columns={[
-                            {title: "名称", dataIndex: "name"},
-                            {title: "URL", dataIndex: "url", width: "200px"},
-                            {
-                                title: "操作", dataIndex: "option", width: "50px", render: () => {
-                                    return <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
-                                }
-                            },
-                        ]} rowKey="id" toolBarRender={false}/>
+                        <ProTable
+                            dataSource={docs} columns={columns} toolBarRender={false} search={false}
+                            options={false} pagination={false} tableLayout={"fixed"}
+                            tableViewRender={(_, dom) => {
+                                return (
+                                    <>
+                                        {dom}
+                                        <AddLink type={LinkType.doc.value} component={props.component}
+                                                 callback={addLink}/>
+                                    </>
+                                )
+                            }}
+                        />
                     </ProForm.Item>
                 </StepsForm.StepForm>
                 <StepsForm.StepForm title={"Other"}>
                     <ProForm.Item name="other">
-                        <EditableProTable value={[{
-                            id: 1,
-                            name: "GitHub",
-                            url: "https://github.com/",
-                        }, {
-                            id: 2,
-                            name: "GitLab",
-                            url: "https://gitlab.com/",
-                        }, {
-                            id: 3,
-                            name: "Gitee",
-                            url: "https://gitee.com/",
-                        }]} columns={[
-                            {title: "名称", dataIndex: "name"},
-                            {title: "URL", dataIndex: "url", width: "200px"},
-                            {
-                                title: "操作", dataIndex: "option", width: "50px", render: () => {
-                                    return <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
-                                }
-                            },
-                        ]} rowKey="id" toolBarRender={false}/>
+                        <ProTable
+                            dataSource={others} columns={columns} toolBarRender={false} search={false}
+                            options={false} pagination={false} tableLayout={"fixed"}
+                            tableViewRender={(_, dom) => {
+                                return (
+                                    <>
+                                        {dom}
+                                        <AddLink type={LinkType.other.value} component={props.component}
+                                                 callback={addLink}/>
+                                    </>
+                                )
+                            }}
+                        />
                     </ProForm.Item>
                 </StepsForm.StepForm>
             </StepsForm>
@@ -254,42 +305,147 @@ const Tools = (props: API.Component) => {
             <Divider orientation={"left"} style={{marginTop: "0", marginBottom: "8px"}} orientationMargin={0}>
                 <Typography.Text type={"secondary"}>Dashboard</Typography.Text>
             </Divider>
-            <Button icon={<DashboardOutlined/>}>
-                Dashboard
-            </Button>
-            <Button icon={<LinkOutlined/>}>
-                Service Logs
-            </Button>
-            <Button icon={<LinkOutlined/>}>
-                Tracing
-            </Button>
-            <Button icon={<LinkOutlined/>}>
-                On-Call
-            </Button>
+            {
+                props.links?.filter(
+                    (link) => link.type === LinkType.dashboard.value
+                ).map(
+                    (link, i) => (
+                        <Button key={`links-dashboard${i}`} target={"_blank"} href={link.url} icon={<LinkOutlined/>}>
+                            {link.title}
+                        </Button>
+                    ))
+            }
             <Divider orientation={"left"} style={{marginTop: "0", marginBottom: "8px"}} orientationMargin={0}>
                 <Typography.Text type={"secondary"}>Document</Typography.Text>
             </Divider>
-            <Button icon={<LinkOutlined/>}>
-                设计文档
-            </Button>
-            <Button icon={<LinkOutlined/>}>
-                使用手册
-            </Button>
-            <Button icon={<LinkOutlined/>}>
-                Runbook
-            </Button>
+            {
+                props.links?.filter(
+                    (link) => link.type === LinkType.doc.value
+                ).map(
+                    (link, i) => (
+                        <Button key={`links-doc${i}`} target={"_blank"} href={link.url} icon={<LinkOutlined/>}>
+                            {link.title}
+                        </Button>
+                    ))
+            }
             <Divider orientation={"left"} style={{marginTop: "0", marginBottom: "8px"}} orientationMargin={0}>
                 <Typography.Text type={"secondary"}>Other</Typography.Text>
             </Divider>
-            <Button icon={<LinkOutlined/>}>
-                Jira issues
-            </Button>
+            {
+                props.links?.filter(
+                    (link) => link.type === LinkType.other.value
+                ).map(
+                    (link, i) => (
+                        <Button key={`links-other${i}`} target={"_blank"} href={link.url} icon={<LinkOutlined/>}>
+                            {link.title}
+                        </Button>
+                    ))
+            }
+
         </Flex>
+    )
+}
+
+const AddLink = (props: { component: API.Component, callback: (link: API.Link) => boolean, type: string }) => {
+    const formRef = React.useRef<FormInstance>();
+
+    return (
+        <ModalForm
+            width={600} formRef={formRef}
+            trigger={<Button type="dashed" block style={{margin: '10px 0',}} icon={<PlusOutlined/>}>添加</Button>}
+            onFinish={async (values) => {
+                await ComponentService.addLink({
+                    component_id: props.component.id,
+                    type: props.type,
+                    title: values.title,
+                    url: values.url
+                })
+                props.callback({
+                    type: props.type,
+                    title: values.title,
+                    url: values.url
+                })
+                formRef.current?.resetFields()
+                return true
+            }}
+        >
+            <ProFormText name={"title"} label={"标题"} required rules={[{required: true, message: "请输入标题"}]}/>
+            <ProFormTextArea name={"url"} label={"URL"} required rules={[{required: true, message: "请输入URL"}]}/>
+        </ModalForm>
     )
 }
 
 const EditBasicInfo = (props: { component: API.Component, callback: () => void }) => {
     const [visible, setVisible] = React.useState(false);
+    const [repositories, setRepositories] = React.useState<API.Link[]>([]);
+    const [chats, setChats] = React.useState<API.Link[]>([]);
+
+    const deleteLocalLink = (link: API.Link) => {
+        setRepositories(repositories.filter(item => item !== link))
+        setChats(chats.filter(item => item !== link))
+    }
+
+    const addLink = (link: API.Link) => {
+        switch (link.type) {
+            case LinkType.repository.value:
+                setRepositories([...repositories, link])
+                break
+            case LinkType.chat.value:
+                setChats([...chats, link])
+                break
+        }
+        return true;
+    }
+
+    const columns: ProColumnType<API.Link>[] = [
+        {
+            title: "名称",
+            dataIndex: "title",
+            width: "200px",
+            ellipsis: true,
+        },
+        {
+            title: "URL",
+            dataIndex: "url",
+            width: "200px",
+            ellipsis: true,
+        },
+        {
+            title: "操作",
+            dataIndex: "option",
+            width: "50px",
+            render: (_, entity) => {
+                return <Popconfirm
+                    title="确认删除吗?"
+                    onConfirm={() => {
+                        ComponentService.removeLink({
+                            component_id: props.component.id,
+                            title: entity.title,
+                            url: entity.url,
+                            type: entity.type,
+                        }).then(() => deleteLocalLink(entity))
+                    }}
+                    okText="是"
+                    cancelText="否"
+                >
+                    <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
+                </Popconfirm>
+            }
+        }
+    ]
+    const fetchTeams = async () => {
+        const response = await TeamService.queryTeams({page: 1, size: 5});
+        return response.data.map(team => ({
+            label: team.name,
+            value: team.id,
+        }));
+    }
+
+    useEffect(() => {
+        setRepositories(props.component.links?.filter(link => link.type === LinkType.repository.value) || [])
+        setChats(props.component.links?.filter(link => link.type === LinkType.chat.value) || [])
+    }, []);
+
     return (
         <>
             <Button type={"text"} size={"small"} icon={<EditOutlined/>} onClick={() => setVisible(true)}/>
@@ -297,8 +453,8 @@ const EditBasicInfo = (props: { component: API.Component, callback: () => void }
                 stepsFormRender={(dom, submitter) => {
                     return (
                         <Modal
-                            title="基本信息" width={600} destroyOnClose
-                            onCancel={() => setVisible(false)} open={visible} footer={submitter}>
+                            title="基本信息" width={600} destroyOnClose open={visible} footer={submitter}
+                            onCancel={() => setVisible(false)}>
                             <div style={{marginTop: "20px"}}>
                                 {dom}
                             </div>
@@ -309,50 +465,66 @@ const EditBasicInfo = (props: { component: API.Component, callback: () => void }
                     return props.callback();
                 }}
             >
-                <StepsForm.StepForm title={"基础"} grid>
-                    <ProFormSelect name={"team"} label={"团队"} colProps={{span: 16}}/>
-                    <ProFormSelect name={"lifecycle"} label={"生命周期"} valueEnum={LifeCycle} colProps={{span: 8}}/>
-                    <ProFormSelect name={"type"} label={"类型"} valueEnum={ComponentType} colProps={{span: 12}}/>
-                    <ProFormSelect name={"tier"} label={"层级"} valueEnum={Tier} colProps={{span: 12}}/>
-                    <ProFormTextArea name={"annotations"} label={"注解"} colProps={{span: 24}}/>
+                <StepsForm.StepForm
+                    title={"基础"} grid initialValues={props.component}
+                    onFinish={async (values) => {
+                        return ComponentService.updateComponent({id: props.component.id, ...values});
+                    }}>
+                    <ProFormText
+                        name={"name"} label={"名称"} allowClear={false} colProps={{span: 16}}
+                        required rules={[{required: true, message: "名称不能为空"}]}/>
+                    <ProFormSelect
+                        name={"type"} label={"类型"} valueEnum={ComponentType} colProps={{span: 8}}
+                        required rules={[{required: true, message: "类型不能为空"}]}
+                    />
+                    <ProFormSelect name={"tags"} label={"标签"} fieldProps={{mode: "tags"}}/>
+                    <ProFormSelect
+                        name={"owner_id"} initialValue={props.component.owner.id} label={"团队"}
+                        colProps={{span: 8}} request={fetchTeams} showSearch
+                        required rules={[{required: true, message: "团队不能为空"}]}
+                    />
+                    <ProFormSelect
+                        name={"lifecycle"} label={"生命周期"} valueEnum={LifeCycle} colProps={{span: 8}}
+                        required rules={[{required: true, message: "生命周期不能为空"}]}
+                    />
+                    <ProFormSelect
+                        name={"tier"} label={"层级"} valueEnum={Tier} colProps={{span: 8}}
+                        required rules={[{required: true, message: "层级不能为空"}]}
+                    />
+                    <ProFormTextArea name={"description"} label={"描述"}/>
                 </StepsForm.StepForm>
                 <StepsForm.StepForm title={"仓库"}>
                     <ProForm.Item name="repos">
-                        <EditableProTable value={[{
-                            id: 1,
-                            name: "GitHub",
-                            url: "https://github.com/",
-                        }, {
-                            id: 2,
-                            name: "GitLab",
-                            url: "https://gitlab.com/",
-                        }, {
-                            id: 3,
-                            name: "Gitee",
-                            url: "https://gitee.com/",
-                        }]} columns={[
-                            {title: "名称", dataIndex: "name"},
-                            {title: "URL", dataIndex: "url", width: "200px"},
-                            {
-                                title: "操作", dataIndex: "option", width: "50px", render: () => {
-                                    return <Button type={"link"} size={"small"} icon={<DeleteOutlined/>}/>
-                                }
-                            },
-                        ]} rowKey="id" toolBarRender={false}/>
+                        <ProTable
+                            dataSource={repositories} columns={columns} toolBarRender={false} search={false}
+                            options={false} pagination={false} tableLayout={"fixed"}
+                            tableViewRender={(_, dom) => {
+                                return (
+                                    <>
+                                        {dom}
+                                        <AddLink type={LinkType.repository.value} component={props.component}
+                                                 callback={addLink}/>
+                                    </>
+                                )
+                            }}
+                        />
                     </ProForm.Item>
                 </StepsForm.StepForm>
                 <StepsForm.StepForm title={"联系"}>
                     <ProForm.Item name="chats">
-                        <EditableProTable columns={[
-                            {title: "名称", dataIndex: "name"},
-                            {title: "URL", dataIndex: "url"},
-                            {title: "操作", dataIndex: "option"},
-                        ]} rowKey="id" editable={{
-                            type: 'multiple',
-                            actionRender: (row, _, dom) => {
-                                return [dom.delete];
-                            },
-                        }} toolBarRender={false}/>
+                        <ProTable
+                            dataSource={chats} columns={columns} toolBarRender={false} search={false}
+                            options={false} pagination={false} tableLayout={"fixed"}
+                            tableViewRender={(_, dom) => {
+                                return (
+                                    <>
+                                        {dom}
+                                        <AddLink type={LinkType.chat.value} component={props.component}
+                                                 callback={addLink}/>
+                                    </>
+                                )
+                            }}
+                        />
                     </ProForm.Item>
                 </StepsForm.StepForm>
             </StepsForm>
@@ -367,7 +539,7 @@ export type Props = {
 
 export default (props: Props) => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const columns: ProDescriptionsItemProps[] = [
+    const columns: ProDescriptionsItemProps<API.Component>[] = [
         {
             title: "类型",
             dataIndex: "type",
@@ -396,14 +568,22 @@ export default (props: Props) => {
             }
         },
         {
-            title: "联系",
-            dataIndex: "onCall",
-            render: (text, record) => {
+            title: "聊天",
+            dataIndex: "chat",
+            render: (_, record) => {
                 return (
                     <Flex vertical gap={5}>
-                        <a><Space><UsergroupAddOutlined/>问题反馈群</Space></a>
-                        <a><Space><UsergroupAddOutlined/>需求群</Space></a>
-                        <a><Space><UsergroupAddOutlined/>值班群</Space></a>
+                        {
+                            record.links?.filter(
+                                (link) => link.type === LinkType.chat.value
+                            ).map(
+                                (link, i) => (
+                                    <a key={`links-chat${i}`} href={link.url} target={"_blank"}>
+                                        <Space><UsergroupAddOutlined/>{link.title}</Space>
+                                    </a>
+                                )
+                            )
+                        }
                     </Flex>
                 )
             }
@@ -411,12 +591,20 @@ export default (props: Props) => {
         {
             title: "仓库",
             dataIndex: "repository",
-            render: (text, record) => {
+            render: (_, record) => {
                 return (
                     <Flex vertical gap={5}>
-                        <a><Space><GitlabOutlined/>demo-service</Space></a>
-                        <a><Space><GitlabOutlined/>demo-library</Space></a>
-                        <a><Space><GitlabOutlined/>demo-console</Space></a>
+                        {
+                            record.links?.filter(
+                                (link) => link.type === LinkType.repository.value
+                            ).map(
+                                (link, i) => (
+                                    <a key={`links-repository${i}`} href={link.url} target={"_blank"}>
+                                        <Space><GitlabOutlined/>{link.title}</Space>
+                                    </a>
+                                )
+                            )
+                        }
                     </Flex>
                 )
             }
@@ -438,10 +626,11 @@ export default (props: Props) => {
         <ProCard ghost gutter={[16, 16]} wrap>
             <ProCard colSpan={12} title={"基础信息"}
                      extra={<EditBasicInfo component={props.component} callback={props.callback}/>}>
-                <ProDescriptions columns={columns} dataSource={props} colon={false}/>
+                <ProDescriptions columns={columns} dataSource={props.component} colon={false}/>
             </ProCard>
             <ProCard colSpan={12} title={"工具"}
-                     extra={<Button type={"text"} size={"small"} icon={<EditTools {...props.component}/>}/>}>
+                     extra={<Button type={"text"} size={"small"}
+                                    icon={<EditTools component={props.component} callback={props.callback}/>}/>}>
                 <Tools {...props.component}/>
             </ProCard>
             <ProCard

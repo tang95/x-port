@@ -15,6 +15,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/vektah/gqlparser/v2 v2.5.11
+	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.18.0
 	gorm.io/driver/mysql v1.5.4
