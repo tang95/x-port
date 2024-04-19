@@ -1,3 +1,5 @@
+import {AppstoreOutlined, BuildOutlined, GlobalOutlined} from "@ant-design/icons";
+
 export const Tier = {
     "tier1": {
         text: "第一层",
@@ -32,15 +34,22 @@ export const LifeCycle = {
     },
 }
 
+export const convertComponentType = (type: keyof typeof ComponentType) => {
+    return ComponentType[type]
+}
+
 export const ComponentType = {
     "service": {
-        text: "服务"
+        text: "Service",
+        icon: <AppstoreOutlined/>
     },
     "library": {
-        text: "库"
+        text: "Library",
+        icon: <BuildOutlined/>
     },
     "website": {
-        text: "网站"
+        text: "WebSite",
+        icon: <GlobalOutlined/>
     },
 }
 

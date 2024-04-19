@@ -137,8 +137,59 @@ func (repo *componentRepo) QueryDependency(ctx context.Context, id string, filte
 }
 
 func (repo *componentRepo) QueryDependents(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error) {
-	//TODO implement me
-	panic("implement me")
+	var (
+		components []*domain.Component
+		total      int64
+	)
+	tx := repo.DB(ctx).Model(&domain.Component{}).
+		Joins("inner join component_component on source_id = component.id and target_id = ?", id)
+	if filter.Keywords != "" {
+		tx = tx.Where("name like ?", "%"+filter.Keywords+"%")
+	}
+	if filter.Type != "" {
+		tx = tx.Where("type = ?", filter.Type)
+	}
+	if filter.Lifecycle != "" {
+		tx = tx.Where("lifecycle = ?", filter.Lifecycle)
+	}
+	if len(filter.ComponentIDs) > 0 {
+		tx = tx.Where("id in ?", filter.ComponentIDs)
+	}
+	tx = tx.Count(&total)
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	if page != nil {
+		tx = tx.Offset(page.GetOffset()).Limit(page.GetLimit())
+	}
+	if sort != nil {
+		for _, s := range sort {
+			tx = tx.Order(s.Field + " " + string(s.Direction))
+		}
+	}
+	tx = tx.Find(&components)
+	return components, int32(total), tx.Error
+}
+
+func (repo *componentRepo) AddDependency(ctx context.Context, sourceID, targetID string) error {
+	return repo.DB(ctx).Create(&domain.ComponentComponent{
+		SourceID: sourceID,
+		TargetID: targetID,
+	}).Error
+}
+
+func (repo *componentRepo) ExistDependency(ctx context.Context, sourceID, targetID string) (bool, error) {
+	return repo.DB(ctx).
+		Model(&domain.ComponentComponent{}).
+		Where("source_id = ? and target_id = ?", sourceID, targetID).
+		First(&domain.ComponentComponent{}).
+		Error == nil, nil
+}
+
+func (repo *componentRepo) RemoveDependency(ctx context.Context, sourceID string, targetID string) error {
+	return repo.DB(ctx).
+		Where("source_id = ? and target_id = ?", sourceID, targetID).
+		Delete(&domain.ComponentComponent{}).Error
 }
 
 func (repo *componentRepo) QueryTags(ctx context.Context) ([]string, error) {

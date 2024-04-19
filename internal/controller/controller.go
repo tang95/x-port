@@ -73,6 +73,8 @@ func (controller *Controller) WithRoutes(engine *gin.Engine, jwtMiddleware *jwt.
 	component.POST("/annotations/remove", controller.removeComponentAnnotation())
 	component.POST("/links/add", controller.addComponentLink())
 	component.POST("/links/remove", controller.removeComponentLink())
+	component.GET("/dependents/add", controller.addComponentDependency())
+	component.GET("/dependents/remove", controller.removeComponentDependency())
 
 	// graphql
 	graphql := api.Group("/graphql", jwtMiddleware.MiddlewareFunc())

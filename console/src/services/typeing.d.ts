@@ -36,6 +36,8 @@ declare namespace API {
         type: string;
         tier: string;
         lifecycle: string;
+        dependency?: PageResponse<Component>;
+        dependents?: PageResponse<Component>;
         owner: Team;
         links?: Link[]
         tags?: string[]

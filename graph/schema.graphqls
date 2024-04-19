@@ -43,7 +43,8 @@ type Component {
     links: [Link!]
     tags: [String!]
     annotations: Map
-    components(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
+    dependency(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
+    dependents(page: PageInput!, sort: [SortInput!], filter: ComponentFilter): ComponentConnection!
     createdAt: Time!
     updatedAt: Time!
 }

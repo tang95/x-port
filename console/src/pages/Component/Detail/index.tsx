@@ -27,7 +27,7 @@ export default () => {
         if (params.id) {
             run(params.id)
         }
-    }, [])
+    }, [params])
 
     if (!data) {
         return null;

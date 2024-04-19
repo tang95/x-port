@@ -14,6 +14,9 @@ type ComponentRepo interface {
 	Query(ctx context.Context, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
 	QueryDependency(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
 	QueryDependents(ctx context.Context, id string, filter *domain.ComponentFilter, page *domain.PageQuery, sort []*domain.SortQuery) ([]*domain.Component, int32, error)
+	AddDependency(ctx context.Context, sourceID, targetID string) error
+	RemoveDependency(ctx context.Context, sourceID string, targetID string) error
+	ExistDependency(ctx context.Context, sourceID, targetID string) (bool, error)
 	QueryTags(ctx context.Context) ([]string, error)
 }
 
@@ -102,4 +105,28 @@ func (service *Service) RemoveComponentLink(ctx context.Context, componentID str
 		}
 	}
 	return nil
+}
+
+func (service *Service) AddComponentDependency(ctx context.Context, sourceID string, targetID string) error {
+	exist, err := service.componentRepo.ExistDependency(ctx, sourceID, targetID)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return nil
+	}
+	return service.componentRepo.AddDependency(ctx, sourceID, targetID)
+}
+
+func (service *Service) RemoveComponentDependency(ctx context.Context, sourceID string, targetID string) error {
+	return service.transaction.InTx(ctx, func(ctx context.Context) error {
+		exist, err := service.componentRepo.ExistDependency(ctx, sourceID, targetID)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return nil
+		}
+		return service.componentRepo.RemoveDependency(ctx, sourceID, targetID)
+	})
 }

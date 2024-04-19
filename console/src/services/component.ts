@@ -36,6 +36,7 @@ export async function queryComponents(page: API.PageInput, filter: API.Component
                         name
                         description
                         tier
+                        type
                         annotations
                         lifecycle
                         tags
@@ -63,37 +64,56 @@ export async function queryComponents(page: API.PageInput, filter: API.Component
     return data.queryComponents
 }
 
-export async function getComponent(id: string): Promise<API.Component> {
+export async function getComponent(
+    id: string,
+    dependency: boolean | {
+        page: API.PageInput,
+        filter?: API.ComponentFilter,
+        sort?: API.SortInput[]
+    } = false,
+    dependents: boolean | {
+        page: API.PageInput,
+        filter?: API.ComponentFilter,
+        sort?: API.SortInput[]
+    } = false
+): Promise<API.Component> {
     const {data} = await request<any>('/api/graphql/query', {
         method: 'POST',
         data: {
-            query: `#graphql
-            query MyQuery($id: ID!) {
+            query: `
+            query MyQuery($id: ID!
+            ${dependency ? `, $dependencyFilter: ComponentFilter, $dependencyPage: PageInput!, $dependencySort: [SortInput!]`: ""}
+            ${dependency ? `,$dependentsFilter: ComponentFilter, $dependentsPage: PageInput!, $dependentsSort: [SortInput!]`: ""}
+            ) {
                 getComponent(id: $id) {
-                    id
-                    name
-                    description
-                    tier
-                    type
-                    annotations
-                    lifecycle
-                    tags
-                    links {
-                        title
-                        type
-                        url
-                    }
-                    owner {
-                        id
-                        name
-                    }
-                    updatedAt
-                    createdAt
+                    id name description tier type annotations lifecycle
+                    tags links { title type url } owner { id name }
+                    updatedAt createdAt
+                    ${dependency ? `dependency(filter: $dependencyFilter, page: $dependencyPage, sort: $dependencySort) {
+                        total data {
+                            id name description tier type annotations lifecycle
+                            tags links { title type url } owner { id name }
+                            updatedAt createdAt
+                        }
+                    }`: ""}
+                    ${dependents ? `dependents(filter: $dependentsFilter, page: $dependentsPage, sort: $dependentsSort) {
+                        total data {
+                            id name description tier type annotations lifecycle
+                            tags links { title type url } owner { id name }
+                            updatedAt createdAt
+                        }
+                    }` : ""}
                 }
             }
             `,
             variables: {
                 id: id,
+                dependencyFilter: dependency ? (dependency as any).filter : undefined,
+                dependencyPage: dependency ? (dependency as any).page : undefined,
+                dependencySort: dependency ? (dependency as any).sort : undefined,
+                dependentsFilter: dependents ? (dependents as any).filter : undefined,
+                dependentsPage: dependents ? (dependents as any).page : undefined,
+                dependentsSort: dependents ? (dependents as any).sort : undefined,
             }
         },
     })

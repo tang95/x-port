@@ -20,7 +20,8 @@ type Component struct {
 	Links       []*Link                `json:"links,omitempty"`
 	Tags        []string               `json:"tags,omitempty"`
 	Annotations map[string]interface{} `json:"annotations,omitempty"`
-	Components  *ComponentConnection   `json:"components"`
+	Dependency  *ComponentConnection   `json:"dependency"`
+	Dependents  *ComponentConnection   `json:"dependents"`
 	CreatedAt   time.Time              `json:"createdAt"`
 	UpdatedAt   time.Time              `json:"updatedAt"`
 }

@@ -51,8 +51,9 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Component struct {
 		Annotations func(childComplexity int) int
-		Components  func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
 		CreatedAt   func(childComplexity int) int
+		Dependency  func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
+		Dependents  func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Lifecycle   func(childComplexity int) int
@@ -112,7 +113,8 @@ type ComplexityRoot struct {
 type ComponentResolver interface {
 	Owner(ctx context.Context, obj *model.Component) (*model.Team, error)
 
-	Components(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
+	Dependency(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
+	Dependents(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 }
 type QueryResolver interface {
 	QueryComponents(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
@@ -152,24 +154,36 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Component.Annotations(childComplexity), true
 
-	case "Component.components":
-		if e.complexity.Component.Components == nil {
-			break
-		}
-
-		args, err := ec.field_Component_components_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Component.Components(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput), args["filter"].(*model.ComponentFilter)), true
-
 	case "Component.createdAt":
 		if e.complexity.Component.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Component.CreatedAt(childComplexity), true
+
+	case "Component.dependency":
+		if e.complexity.Component.Dependency == nil {
+			break
+		}
+
+		args, err := ec.field_Component_dependency_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Component.Dependency(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput), args["filter"].(*model.ComponentFilter)), true
+
+	case "Component.dependents":
+		if e.complexity.Component.Dependents == nil {
+			break
+		}
+
+		args, err := ec.field_Component_dependents_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Component.Dependents(childComplexity, args["page"].(model.PageInput), args["sort"].([]*model.SortInput), args["filter"].(*model.ComponentFilter)), true
 
 	case "Component.description":
 		if e.complexity.Component.Description == nil {
@@ -542,7 +556,40 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Component_components_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Component_dependency_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.PageInput
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalNPageInput2githubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐPageInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 []*model.SortInput
+	if tmp, ok := rawArgs["sort"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+		arg1, err = ec.unmarshalOSortInput2ᚕᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐSortInputᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sort"] = arg1
+	var arg2 *model.ComponentFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg2, err = ec.unmarshalOComponentFilter2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Component_dependents_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.PageInput
@@ -1222,8 +1269,8 @@ func (ec *executionContext) fieldContext_Component_annotations(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Component_components(ctx context.Context, field graphql.CollectedField, obj *model.Component) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Component_components(ctx, field)
+func (ec *executionContext) _Component_dependency(ctx context.Context, field graphql.CollectedField, obj *model.Component) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Component_dependency(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1236,7 +1283,7 @@ func (ec *executionContext) _Component_components(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Component().Components(rctx, obj, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput), fc.Args["filter"].(*model.ComponentFilter))
+		return ec.resolvers.Component().Dependency(rctx, obj, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput), fc.Args["filter"].(*model.ComponentFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1253,7 +1300,7 @@ func (ec *executionContext) _Component_components(ctx context.Context, field gra
 	return ec.marshalNComponentConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Component_components(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Component_dependency(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Component",
 		Field:      field,
@@ -1276,7 +1323,68 @@ func (ec *executionContext) fieldContext_Component_components(ctx context.Contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Component_components_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Component_dependency_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Component_dependents(ctx context.Context, field graphql.CollectedField, obj *model.Component) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Component_dependents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Component().Dependents(rctx, obj, fc.Args["page"].(model.PageInput), fc.Args["sort"].([]*model.SortInput), fc.Args["filter"].(*model.ComponentFilter))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ComponentConnection)
+	fc.Result = res
+	return ec.marshalNComponentConnection2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐComponentConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Component_dependents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Component",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_ComponentConnection_total(ctx, field)
+			case "data":
+				return ec.fieldContext_ComponentConnection_data(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ComponentConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Component_dependents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1471,8 +1579,10 @@ func (ec *executionContext) fieldContext_ComponentConnection_data(ctx context.Co
 				return ec.fieldContext_Component_tags(ctx, field)
 			case "annotations":
 				return ec.fieldContext_Component_annotations(ctx, field)
-			case "components":
-				return ec.fieldContext_Component_components(ctx, field)
+			case "dependency":
+				return ec.fieldContext_Component_dependency(ctx, field)
+			case "dependents":
+				return ec.fieldContext_Component_dependents(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Component_createdAt(ctx, field)
 			case "updatedAt":
@@ -1736,8 +1846,10 @@ func (ec *executionContext) fieldContext_Query_getComponent(ctx context.Context,
 				return ec.fieldContext_Component_tags(ctx, field)
 			case "annotations":
 				return ec.fieldContext_Component_annotations(ctx, field)
-			case "components":
-				return ec.fieldContext_Component_components(ctx, field)
+			case "dependency":
+				return ec.fieldContext_Component_dependency(ctx, field)
+			case "dependents":
+				return ec.fieldContext_Component_dependents(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Component_createdAt(ctx, field)
 			case "updatedAt":
@@ -4637,7 +4749,7 @@ func (ec *executionContext) _Component(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._Component_tags(ctx, field, obj)
 		case "annotations":
 			out.Values[i] = ec._Component_annotations(ctx, field, obj)
-		case "components":
+		case "dependency":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4646,7 +4758,43 @@ func (ec *executionContext) _Component(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Component_components(ctx, field, obj)
+				res = ec._Component_dependency(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "dependents":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Component_dependents(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

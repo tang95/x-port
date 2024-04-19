@@ -93,9 +93,11 @@ models:
       - github.com/99designs/gqlgen/graphql.Time
   Component:
     fields:
-      components:
-        resolver: true
       owner:
+        resolver: true
+      dependents:
+        resolver: true
+      dependency:
         resolver: true
   Team:
     fields:

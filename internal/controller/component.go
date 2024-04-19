@@ -139,3 +139,39 @@ func (controller *Controller) removeComponentLink() gin.HandlerFunc {
 		ctx.JSON(200, make(map[string]interface{}))
 	}
 }
+
+func (controller *Controller) addComponentDependency() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var req request.AddComponentDependencyRequest
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"msg": err.Error(),
+			})
+		}
+		if err := controller.service.AddComponentDependency(ctx, req.SourceID, req.TargetID); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": err.Error(),
+			})
+			return
+		}
+		ctx.JSON(200, make(map[string]interface{}))
+	}
+}
+
+func (controller *Controller) removeComponentDependency() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var req request.RemoveComponentDependencyRequest
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"msg": err.Error(),
+			})
+		}
+		if err := controller.service.RemoveComponentDependency(ctx, req.SourceID, req.TargetID); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": err.Error(),
+			})
+			return
+		}
+		ctx.JSON(200, make(map[string]interface{}))
+	}
+}

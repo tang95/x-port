@@ -3,8 +3,7 @@ import {LightFilter, PageContainer, ProColumnType, ProFormSelect, ProTable} from
 import {Button, Card, Col, Input, Row, Space} from "antd";
 import styles from "./index.less";
 import {Link} from "@umijs/max";
-import {LinkOutlined} from "@ant-design/icons";
-import {ComponentType, LifeCycle, Tier} from "@/constants/component";
+import {ComponentType, convertComponentType, LifeCycle, Tier} from "@/constants/component";
 import {ComponentService, TeamService} from "@/services";
 import {TableSortToApiSort} from "@/utils/sort";
 
@@ -15,9 +14,14 @@ const ComponentPage: React.FC = () => {
             sorter: true,
             dataIndex: 'name',
             render: (dom, record) => {
-                return <Link to={`/component/detail/${record.id}`}>
-                    {dom}
-                </Link>
+                return (
+                    <Space>
+                        <span>{convertComponentType(record.type as keyof typeof ComponentType).icon}</span>
+                        <Link to={`/component/detail/${record.id}`}>
+                            {dom}
+                        </Link>
+                    </Space>
+                )
             },
             width: "20%"
         },
@@ -38,19 +42,6 @@ const ComponentPage: React.FC = () => {
             dataIndex: 'lifecycle',
             valueEnum: LifeCycle,
             width: 100
-        },
-        {
-            title: '代码仓库',
-            dataIndex: 'repository',
-            render: (_, record) => {
-                return <Link to={"/repository"}>
-                    <Space>
-                        <LinkOutlined/>
-                        <span>demo.git</span>
-                    </Space>
-                </Link>
-            },
-            width: 200
         },
         {
             title: "团队",
