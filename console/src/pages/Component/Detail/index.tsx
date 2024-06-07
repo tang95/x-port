@@ -3,7 +3,7 @@ import {PageContainer} from "@ant-design/pro-components";
 import useRequest from "@ahooksjs/use-request";
 import {ComponentService} from "@/services";
 import {useParams, useSearchParams} from "@umijs/max";
-import {Tag, Typography} from "antd";
+import {Spin, Tag} from "antd";
 import Overview from "./components/Overview";
 import Scorecard from "./components/Scorecard";
 import Dependencies from "./components/Dependencies";
@@ -13,7 +13,7 @@ export default () => {
     const params = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const [tabActive, setTabActive] = React.useState("overview")
-    const {data, loading, run, refresh, mutate} = useRequest((id: string) => ComponentService.getComponent(id), {
+    const {data, loading, run, refresh} = useRequest((id: string) => ComponentService.getComponent(id), {
         manual: true
     })
 
@@ -27,10 +27,10 @@ export default () => {
         if (params.id) {
             run(params.id)
         }
-    }, [params])
+    }, [params.id])
 
-    if (!data) {
-        return null;
+    if (!data || loading) {
+        return <PageContainer loading={true}/>;
     }
 
     const tags = data?.tags?.map((tag) => <Tag color={"blue"}>{tag}</Tag>)
@@ -38,8 +38,7 @@ export default () => {
     return (
         <PageContainer
             title={data?.name} tags={tags} header={{style: {backgroundColor: "white"}}}
-            content={<Typography.Text type={"secondary"}>{data?.description}</Typography.Text>}
-            loading={loading} tabActiveKey={tabActive}
+            loading={loading} tabActiveKey={tabActive} subTitle={data?.description}
             onTabChange={(value) => {
                 setTabActive(value)
                 setSearchParams({...searchParams, tab: value})

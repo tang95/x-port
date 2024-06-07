@@ -209,3 +209,33 @@ func (repo *componentRepo) QueryTags(ctx context.Context) ([]string, error) {
 		),
 	), nil
 }
+
+func (repo *componentRepo) Count(ctx context.Context, filter *domain.ComponentFilter) (int64, error) {
+	var (
+		total int64
+	)
+	tx := repo.DB(ctx).Model(&domain.Component{})
+	if filter.Keywords != "" {
+		tx = tx.Where("name like ?", "%"+filter.Keywords+"%")
+	}
+	if filter.Type != "" {
+		tx = tx.Where("type = ?", filter.Type)
+	}
+	if filter.Lifecycle != "" {
+		tx = tx.Where("lifecycle = ?", filter.Lifecycle)
+	}
+	if len(filter.ComponentIDs) > 0 {
+		tx = tx.Where("id in ?", filter.ComponentIDs)
+	}
+	if filter.Tier != "" {
+		tx = tx.Where("tier = ?", filter.Tier)
+	}
+	if filter.TeamID != "" {
+		tx = tx.Where("owner_id = ?", filter.TeamID)
+	}
+	if filter.Tags != nil && len(filter.Tags) > 0 {
+		tx = tx.Where("EXISTS(SELECT 1 FROM json_each(tags) WHERE value in ?)", filter.Tags)
+	}
+	tx = tx.Count(&total)
+	return total, tx.Error
+}

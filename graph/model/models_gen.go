@@ -40,6 +40,13 @@ type ComponentFilter struct {
 	Tags      []string `json:"tags,omitempty"`
 }
 
+type HomeMetrics struct {
+	MyComponentCount int `json:"myComponentCount"`
+	ComponentCount   int `json:"componentCount"`
+	TeamCount        int `json:"teamCount"`
+	UserCount        int `json:"userCount"`
+}
+
 type Link struct {
 	Title string `json:"title"`
 	URL   string `json:"url"`

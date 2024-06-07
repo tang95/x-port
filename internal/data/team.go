@@ -81,3 +81,11 @@ func (repo *teamRepo) QueryMember(ctx context.Context, id string, filter *domain
 	tx = tx.Find(&users)
 	return users, int32(total), tx.Error
 }
+
+func (repo *teamRepo) Count(ctx context.Context, filter *domain.TeamFilter) (int64, error) {
+	var (
+		total int64
+	)
+	tx := repo.DB(ctx).Model(&domain.Team{}).Count(&total)
+	return total, tx.Error
+}

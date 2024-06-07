@@ -2,6 +2,8 @@ import {PageContainer, ProCard, StatisticCard} from '@ant-design/pro-components'
 import React from "react";
 import {Avatar, Col, Empty, Row, Space, Typography} from "antd";
 import useUser from "@/models/global";
+import useRequest from "@ahooksjs/use-request";
+import {HomeService} from "@/services";
 
 const PageHeaderContent: React.FC<{
     user: Partial<API.AuthUser>;
@@ -22,13 +24,14 @@ const PageHeaderContent: React.FC<{
 };
 
 const ExtraContent: React.FC<Record<string, any>> = () => {
+    const {data} = useRequest(HomeService.getHomeMetrics,)
     return (
         <StatisticCard.Group ghost>
-            <StatisticCard ghost statistic={{title: "我的组件", value: 56}}/>
+            <StatisticCard ghost statistic={{title: "我的组件", value: data?.myComponentCount}}/>
             <StatisticCard.Divider/>
-            <StatisticCard ghost statistic={{title: "团队", value: 8}}/>
+            <StatisticCard ghost statistic={{title: "组件", value: data?.componentCount}}/>
             <StatisticCard.Divider/>
-            <StatisticCard ghost statistic={{title: "组件", value: 2223}}/>
+            <StatisticCard ghost statistic={{title: "团队", value: data?.teamCount}}/>
         </StatisticCard.Group>
     );
 };

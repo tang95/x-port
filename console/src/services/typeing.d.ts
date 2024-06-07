@@ -97,4 +97,10 @@ declare namespace API {
         direction: "ASC" | "DESC"
     }
 
+    type HomeMetrics = {
+        myComponentCount: number;
+        componentCount: number;
+        teamCount: number;
+        userCount: number;
+    }
 }

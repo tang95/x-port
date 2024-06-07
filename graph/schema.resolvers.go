@@ -103,6 +103,42 @@ func (r *componentResolver) Dependents(ctx context.Context, obj *model.Component
 	}, nil
 }
 
+// MyComponentCount is the resolver for the myComponentCount field.
+func (r *homeMetricsResolver) MyComponentCount(ctx context.Context, obj *model.HomeMetrics) (int, error) {
+	count, err := r.componentRepo.Count(ctx, &domain.ComponentFilter{})
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+// ComponentCount is the resolver for the componentCount field.
+func (r *homeMetricsResolver) ComponentCount(ctx context.Context, obj *model.HomeMetrics) (int, error) {
+	count, err := r.componentRepo.Count(ctx, &domain.ComponentFilter{})
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+// TeamCount is the resolver for the teamCount field.
+func (r *homeMetricsResolver) TeamCount(ctx context.Context, obj *model.HomeMetrics) (int, error) {
+	count, err := r.teamRepo.Count(ctx, &domain.TeamFilter{})
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+// UserCount is the resolver for the userCount field.
+func (r *homeMetricsResolver) UserCount(ctx context.Context, obj *model.HomeMetrics) (int, error) {
+	count, err := r.userRepo.Count(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
 // QueryComponents is the resolver for the queryComponents field.
 func (r *queryResolver) QueryComponents(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error) {
 	var (
@@ -261,6 +297,11 @@ func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, er
 	}, nil
 }
 
+// GetHomeMetrics is the resolver for the getHomeMetrics field.
+func (r *queryResolver) GetHomeMetrics(ctx context.Context) (*model.HomeMetrics, error) {
+	return &model.HomeMetrics{}, nil
+}
+
 // Members is the resolver for the members field.
 func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error) {
 	var (
@@ -300,6 +341,9 @@ func (r *teamResolver) Members(ctx context.Context, obj *model.Team, page model.
 // Component returns ComponentResolver implementation.
 func (r *Resolver) Component() ComponentResolver { return &componentResolver{r} }
 
+// HomeMetrics returns HomeMetricsResolver implementation.
+func (r *Resolver) HomeMetrics() HomeMetricsResolver { return &homeMetricsResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
@@ -307,35 +351,6 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 func (r *Resolver) Team() TeamResolver { return &teamResolver{r} }
 
 type componentResolver struct{ *Resolver }
+type homeMetricsResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
-
-func componentModelToDomain(component *domain.Component) *model.Component {
-	result := &model.Component{
-		ID:          component.ID,
-		Name:        component.Name,
-		Description: &component.Description,
-		Type:        string(component.Type),
-		Lifecycle:   string(component.Lifecycle),
-		Owner: &model.Team{
-			ID: component.OwnerID,
-		},
-		Tier:        string(component.Tier),
-		Tags:        component.Tags,
-		Annotations: component.Annotations,
-		CreatedAt:   component.CreatedAt,
-		UpdatedAt:   component.UpdatedAt,
-	}
-	if len(component.Links) > 0 {
-		links := make([]*model.Link, 0)
-		for _, link := range component.Links {
-			links = append(links, &model.Link{
-				URL:   link.URL,
-				Type:  string(link.Type),
-				Title: link.Title,
-			})
-		}
-		result.Links = links
-	}
-	return result
-}

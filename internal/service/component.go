@@ -18,6 +18,7 @@ type ComponentRepo interface {
 	RemoveDependency(ctx context.Context, sourceID string, targetID string) error
 	ExistDependency(ctx context.Context, sourceID, targetID string) (bool, error)
 	QueryTags(ctx context.Context) ([]string, error)
+	Count(ctx context.Context, filter *domain.ComponentFilter) (int64, error)
 }
 
 func (service *Service) CreateComponent(ctx context.Context) (string, error) {

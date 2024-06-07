@@ -41,6 +41,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Component() ComponentResolver
+	HomeMetrics() HomeMetricsResolver
 	Query() QueryResolver
 	Team() TeamResolver
 }
@@ -71,6 +72,13 @@ type ComplexityRoot struct {
 		Total func(childComplexity int) int
 	}
 
+	HomeMetrics struct {
+		ComponentCount   func(childComplexity int) int
+		MyComponentCount func(childComplexity int) int
+		TeamCount        func(childComplexity int) int
+		UserCount        func(childComplexity int) int
+	}
+
 	Link struct {
 		Title func(childComplexity int) int
 		Type  func(childComplexity int) int
@@ -79,6 +87,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetComponent    func(childComplexity int, id string) int
+		GetHomeMetrics  func(childComplexity int) int
 		GetTeam         func(childComplexity int, id string) int
 		GetUser         func(childComplexity int, id string) int
 		QueryComponents func(childComplexity int, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) int
@@ -116,6 +125,12 @@ type ComponentResolver interface {
 	Dependency(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 	Dependents(ctx context.Context, obj *model.Component, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 }
+type HomeMetricsResolver interface {
+	MyComponentCount(ctx context.Context, obj *model.HomeMetrics) (int, error)
+	ComponentCount(ctx context.Context, obj *model.HomeMetrics) (int, error)
+	TeamCount(ctx context.Context, obj *model.HomeMetrics) (int, error)
+	UserCount(ctx context.Context, obj *model.HomeMetrics) (int, error)
+}
 type QueryResolver interface {
 	QueryComponents(ctx context.Context, page model.PageInput, sort []*model.SortInput, filter *model.ComponentFilter) (*model.ComponentConnection, error)
 	GetComponent(ctx context.Context, id string) (*model.Component, error)
@@ -123,6 +138,7 @@ type QueryResolver interface {
 	GetTeam(ctx context.Context, id string) (*model.Team, error)
 	QueryUsers(ctx context.Context, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
+	GetHomeMetrics(ctx context.Context) (*model.HomeMetrics, error)
 }
 type TeamResolver interface {
 	Members(ctx context.Context, obj *model.Team, page model.PageInput, sort []*model.SortInput) (*model.UserConnection, error)
@@ -269,6 +285,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ComponentConnection.Total(childComplexity), true
 
+	case "HomeMetrics.componentCount":
+		if e.complexity.HomeMetrics.ComponentCount == nil {
+			break
+		}
+
+		return e.complexity.HomeMetrics.ComponentCount(childComplexity), true
+
+	case "HomeMetrics.myComponentCount":
+		if e.complexity.HomeMetrics.MyComponentCount == nil {
+			break
+		}
+
+		return e.complexity.HomeMetrics.MyComponentCount(childComplexity), true
+
+	case "HomeMetrics.teamCount":
+		if e.complexity.HomeMetrics.TeamCount == nil {
+			break
+		}
+
+		return e.complexity.HomeMetrics.TeamCount(childComplexity), true
+
+	case "HomeMetrics.userCount":
+		if e.complexity.HomeMetrics.UserCount == nil {
+			break
+		}
+
+		return e.complexity.HomeMetrics.UserCount(childComplexity), true
+
 	case "Link.title":
 		if e.complexity.Link.Title == nil {
 			break
@@ -301,6 +345,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetComponent(childComplexity, args["id"].(string)), true
+
+	case "Query.getHomeMetrics":
+		if e.complexity.Query.GetHomeMetrics == nil {
+			break
+		}
+
+		return e.complexity.Query.GetHomeMetrics(childComplexity), true
 
 	case "Query.getTeam":
 		if e.complexity.Query.GetTeam == nil {
@@ -1594,6 +1645,182 @@ func (ec *executionContext) fieldContext_ComponentConnection_data(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _HomeMetrics_myComponentCount(ctx context.Context, field graphql.CollectedField, obj *model.HomeMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HomeMetrics_myComponentCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.HomeMetrics().MyComponentCount(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HomeMetrics_myComponentCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HomeMetrics",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HomeMetrics_componentCount(ctx context.Context, field graphql.CollectedField, obj *model.HomeMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HomeMetrics_componentCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.HomeMetrics().ComponentCount(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HomeMetrics_componentCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HomeMetrics",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HomeMetrics_teamCount(ctx context.Context, field graphql.CollectedField, obj *model.HomeMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HomeMetrics_teamCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.HomeMetrics().TeamCount(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HomeMetrics_teamCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HomeMetrics",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HomeMetrics_userCount(ctx context.Context, field graphql.CollectedField, obj *model.HomeMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HomeMetrics_userCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.HomeMetrics().UserCount(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HomeMetrics_userCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HomeMetrics",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *model.Link) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Link_title(ctx, field)
 	if err != nil {
@@ -2118,6 +2345,60 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 	if fc.Args, err = ec.field_Query_getUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getHomeMetrics(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getHomeMetrics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetHomeMetrics(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.HomeMetrics)
+	fc.Result = res
+	return ec.marshalNHomeMetrics2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐHomeMetrics(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getHomeMetrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "myComponentCount":
+				return ec.fieldContext_HomeMetrics_myComponentCount(ctx, field)
+			case "componentCount":
+				return ec.fieldContext_HomeMetrics_componentCount(ctx, field)
+			case "teamCount":
+				return ec.fieldContext_HomeMetrics_teamCount(ctx, field)
+			case "userCount":
+				return ec.fieldContext_HomeMetrics_userCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HomeMetrics", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -4895,6 +5176,184 @@ func (ec *executionContext) _ComponentConnection(ctx context.Context, sel ast.Se
 	return out
 }
 
+var homeMetricsImplementors = []string{"HomeMetrics"}
+
+func (ec *executionContext) _HomeMetrics(ctx context.Context, sel ast.SelectionSet, obj *model.HomeMetrics) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, homeMetricsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HomeMetrics")
+		case "myComponentCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HomeMetrics_myComponentCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "componentCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HomeMetrics_componentCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "teamCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HomeMetrics_teamCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "userCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HomeMetrics_userCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var linkImplementors = []string{"Link"}
 
 func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *model.Link) graphql.Marshaler {
@@ -5083,6 +5542,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getUser(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getHomeMetrics":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getHomeMetrics(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5703,6 +6184,20 @@ func (ec *executionContext) marshalNComponentConnection2ᚖgithubᚗcomᚋtang95
 		return graphql.Null
 	}
 	return ec._ComponentConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNHomeMetrics2githubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐHomeMetrics(ctx context.Context, sel ast.SelectionSet, v model.HomeMetrics) graphql.Marshaler {
+	return ec._HomeMetrics(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNHomeMetrics2ᚖgithubᚗcomᚋtang95ᚋxᚑportᚋgraphᚋmodelᚐHomeMetrics(ctx context.Context, sel ast.SelectionSet, v *model.HomeMetrics) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HomeMetrics(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {

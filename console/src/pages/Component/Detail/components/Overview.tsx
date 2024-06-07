@@ -14,6 +14,7 @@ import {
 } from "@ant-design/pro-components";
 import React, {useEffect, useRef} from "react";
 import {
+    CodeOutlined,
     DashboardOutlined,
     DeleteOutlined,
     EditOutlined,
@@ -600,7 +601,7 @@ export default (props: Props) => {
                             ).map(
                                 (link, i) => (
                                     <a key={`links-repository${i}`} href={link.url} target={"_blank"}>
-                                        <Space><GitlabOutlined/>{link.title}</Space>
+                                        <Space><CodeOutlined />{link.title}</Space>
                                     </a>
                                 )
                             )
@@ -614,7 +615,7 @@ export default (props: Props) => {
             dataIndex: "annotations",
             valueType: "jsonCode",
             fieldProps: {
-                style: {maxHeight: 75}
+                style: {maxHeight: 100}
             },
             renderText: (text, record) => {
                 return JSON.stringify(text)

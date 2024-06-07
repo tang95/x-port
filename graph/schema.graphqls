@@ -8,6 +8,7 @@ type Query {
     getTeam(id: ID!): Team!
     queryUsers(page: PageInput!, sort: [SortInput!]): UserConnection!
     getUser(id: ID!): User!
+    getHomeMetrics: HomeMetrics!
 }
 
 input SortInput {
@@ -84,4 +85,12 @@ type Team {
     id: ID!
     name: String!
     members(page: PageInput!, sort: [SortInput!]): UserConnection!
+}
+
+type HomeMetrics {
+    # 我的组件数量
+    myComponentCount: Int!
+    componentCount: Int!
+    teamCount: Int!
+    userCount: Int!
 }

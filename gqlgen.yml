@@ -99,6 +99,16 @@ models:
         resolver: true
       dependency:
         resolver: true
+  HomeMetrics:
+    fields:
+      myComponentCount:
+        resolver: true
+      componentCount:
+        resolver: true
+      teamCount:
+        resolver: true
+      userCount:
+        resolver: true
   Team:
     fields:
       members:
